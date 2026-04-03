@@ -1,40 +1,37 @@
-const BASE_URL = "http://localhost:5000/api"
+const BASE_URL = "https://hostel-backendcv-zed6.onrender.com/api";
 
-const handleResponse = async(response)=>{
-  if(response.status === 401){
-    localStorage.removeItem("token")
-    localStorage.removeItem("role")
-
-    window.location.href = "/"
-
+const handleResponse = async (response) => {
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    window.location.href = "/";
     return;
   }
-  return response.json()
-}
-//generic GET
-export const apiGet = async (endpoint)=>{
-  const token = localStorage.getItem("token")
-  const response = await fetch(`${BASE_URL}${endpoint}`,{
-    headers:{
-      Authorization:`Bearer ${token}`
-    }
-  })
-  return handleResponse(response)
-}
+  return response.json();
+};
 
-//generic POST / PUT / PATCH
+export const apiGet = async (endpoint) => {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return handleResponse(response);
+};
 
 export const apiRequest = async (url, method, data) => {
+  const token = localStorage.getItem("token");
 
-  const token = localStorage.getItem("token"); // 🔥 GET TOKEN
-
-  const res = await fetch(`http://localhost:5000/api${url}`, {
+  const res = await fetch(`${BASE_URL}${url}`, {
     method,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`   // 🔥 IMPORTANT
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
 
   const result = await res.json();
