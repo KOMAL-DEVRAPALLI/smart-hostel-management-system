@@ -28,7 +28,7 @@ const StudentDashboard = () => {
       const [student, feeData, complaints] = await Promise.all([
         apiGet("/students/me"),
         apiGet("/api/fees"),
-        apiGet("/api/complaints/${id}")
+        apiGet(`/api/complaints/${id}`)
       ]);
 
       setFees(

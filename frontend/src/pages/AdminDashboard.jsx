@@ -38,7 +38,7 @@ const AdminDashboard = () => {
         apiGet("/api/students"),
         apiGet("/api/rooms"),
         apiGet("/api/fees"),
-        apiGet("/api/complaints/${id}")
+        apiGet(`/api/complaints/${id}`)
       ]);
 
       const activeRooms = rooms.filter(r => r.status === "active").length;
