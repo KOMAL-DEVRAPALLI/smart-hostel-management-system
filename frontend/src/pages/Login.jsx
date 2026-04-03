@@ -51,7 +51,7 @@ const LoginPage = () => {
     try {
       setLoading(true);
 
-      const data = await apiRequest("/auth/login", "POST", form);
+      const data = await apiRequest("/api/auth/login", "POST", form);
 
       // ⚠️ For demo project only
       localStorage.setItem("token", data.token);
