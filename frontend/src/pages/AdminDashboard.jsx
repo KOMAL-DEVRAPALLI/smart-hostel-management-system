@@ -36,9 +36,9 @@ const AdminDashboard = () => {
       // 🚀 Parallel API calls (IMPORTANT FIX)
       const [students, rooms, fees, complaints] = await Promise.all([
         apiGet("/students"),
-        apiGet("/rooms"),
-        apiGet("/fees"),
-        apiGet("/complaints")
+        apiGet("/api/rooms"),
+        apiGet("/api/fees"),
+        apiGet("/api/complaints")
       ]);
 
       const activeRooms = rooms.filter(r => r.status === "active").length;

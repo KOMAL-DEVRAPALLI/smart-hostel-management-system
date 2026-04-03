@@ -34,7 +34,7 @@ const RoomManagement = () => {
 
   const fetchRooms = async () => {
     try {
-      const data = await apiGet("/rooms");
+      const data = await apiGet("/api/rooms");
       setRooms(data);
     } catch(error) {
       toast.error(error.message);

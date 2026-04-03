@@ -28,7 +28,7 @@ const RoomManagement = () => {
 
   // ---------- FETCH ----------
   const fetchRooms = async () => {
-    const data = await apiGet("/rooms");
+    const data = await apiGet("/api/rooms");
     setRooms(data);
   };
 

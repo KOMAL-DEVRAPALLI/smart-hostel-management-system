@@ -20,7 +20,7 @@ function ComplaintDashboard() {
   const fetchComplaints = async () => {
     try {
       setLoading(true);
-      const data = await apiGet("/complaints");
+      const data = await apiGet("/api/complaints");
       setComplaints(data);
     } catch (error) {
       toast.error(error.message || "Failed to load complaints");

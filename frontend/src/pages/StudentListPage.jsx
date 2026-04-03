@@ -47,7 +47,7 @@ const StudentListPage = () => {
 
       const [studentsData, roomsData] = await Promise.all([
         apiGet("/students"),
-        apiGet("/rooms")
+        apiGet("/api/rooms")
       ]);
 
       setStudents(studentsData);
