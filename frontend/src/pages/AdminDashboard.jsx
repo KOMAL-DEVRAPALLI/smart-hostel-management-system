@@ -35,7 +35,7 @@ const AdminDashboard = () => {
 
       // 🚀 Parallel API calls (IMPORTANT FIX)
       const [students, rooms, fees, complaints] = await Promise.all([
-        apiGet("/students"),
+        apiGet("/api/students"),
         apiGet("/api/rooms"),
         apiGet("/api/fees"),
         apiGet("/api/complaints")

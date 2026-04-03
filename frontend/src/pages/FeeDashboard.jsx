@@ -30,7 +30,7 @@ const FeeDashboard = () => {
   /* ===== FETCH ===== */
 
   const fetchStudents = async () => {
-    const data = await apiGet("/students");
+    const data = await apiGet("/api/students");
     setStudents(data);
   };
 
