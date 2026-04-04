@@ -90,9 +90,9 @@ const ComplaintDashboard = () => {
     try {
       // 🔥 IMPORTANT: Adjust method if backend differs
       await apiRequest(
-        `${API.COMPLAINTS.ALL}/${id}`,
+        `${API.COMPLAINTS.ALL}/resolve/${id}`,
         "PATCH",
-        { status: "resolved" }
+        
       );
 
       // Optimistic update
