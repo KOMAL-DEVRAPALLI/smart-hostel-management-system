@@ -4,7 +4,7 @@ import { API } from "../services/apiRoutes";
 import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
 
-function ComplaintDashboard() {
+const ComplaintDashboard = () => {
 
   const [complaints, setComplaints] = useState([]);
   const [form, setForm] = useState({ title: "", description: "" });
@@ -18,20 +18,25 @@ function ComplaintDashboard() {
     fetchComplaints();
   }, []);
 
+  /* ===== FETCH ===== */
+
   const fetchComplaints = async () => {
     try {
       setLoading(true);
+
       const data = await apiGet(API.COMPLAINTS.ALL);
+
       setComplaints(data);
+
     } catch (error) {
-      console.error(error);
+      console.error("Fetch complaints error:", error);
       toast.error(error.message || "Failed to load complaints");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ===== HANDLE INPUT ===== */
+  /* ===== INPUT ===== */
 
   const handleChange = (e) => {
     setForm({
@@ -40,7 +45,7 @@ function ComplaintDashboard() {
     });
   };
 
-  /* ===== ADD COMPLAINT ===== */
+  /* ===== CREATE ===== */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,15 +69,16 @@ function ComplaintDashboard() {
         form
       );
 
-      // ✅ Optimistic update
-      setComplaints([newComplaint, ...complaints]);
+      // Optimistic update
+      setComplaints(prev => [newComplaint, ...prev]);
 
       toast.success("Complaint submitted");
 
       setForm({ title: "", description: "" });
 
     } catch (error) {
-      toast.error(error.message);
+      console.error("Create complaint error:", error);
+      toast.error(error.message || "Failed to submit complaint");
     } finally {
       setSubmitting(false);
     }
@@ -82,12 +88,14 @@ function ComplaintDashboard() {
 
   const resolveComplaint = async (id) => {
     try {
+      // 🔥 IMPORTANT: Adjust method if backend differs
       await apiRequest(
         `${API.COMPLAINTS.ALL}/${id}`,
         "PATCH",
         { status: "resolved" }
       );
 
+      // Optimistic update
       setComplaints(prev =>
         prev.map(c =>
           c._id === id ? { ...c, status: "resolved" } : c
@@ -97,11 +105,12 @@ function ComplaintDashboard() {
       toast.success("Complaint resolved");
 
     } catch (error) {
-      toast.error(error.message);
+      console.error("Resolve complaint error:", error);
+      toast.error(error.message || "Failed to resolve complaint");
     }
   };
 
-  /* ===== STATUS STYLE ===== */
+  /* ===== STYLE ===== */
 
   const getStatusStyle = (status) => ({
     padding: "4px 10px",
@@ -221,10 +230,9 @@ function ComplaintDashboard() {
 
     </MainLayout>
   );
-}
+};
 
-
-/* ===== STYLES (same, slightly cleaned) ===== */
+/* ===== STYLES ===== */
 
 const pageWrapper = {
   maxWidth: "1100px",
