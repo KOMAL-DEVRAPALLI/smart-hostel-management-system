@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { apiGet, apiRequest } from "../services/api";
+import { API } from "../services/apiRoutes";
 import MainLayout from "../components/layout/MainLayout";
 import {
   tableStyle,
   thStyle,
   tdStyle,
-  buttonDanger,
   buttonPrimary
 } from "../styles/uiStyles";
 import toast from "react-hot-toast";
@@ -30,13 +30,23 @@ const FeeDashboard = () => {
   /* ===== FETCH ===== */
 
   const fetchStudents = async () => {
-    const data = await apiGet("/api/students");
-    setStudents(data);
+    try {
+      const data = await apiGet(API.STUDENTS.ALL);
+      setStudents(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load students");
+    }
   };
 
   const fetchFees = async () => {
-    const data = await apiGet("/api/fees");
-    setFees(data);
+    try {
+      const data = await apiGet(API.FEES.ALL);
+      setFees(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load fees");
+    }
   };
 
   useEffect(() => {
@@ -55,10 +65,10 @@ const FeeDashboard = () => {
     try {
       setLoading(true);
 
-      await apiRequest("/api/fees", "POST", {
+      await apiRequest(API.FEES.ALL, "POST", {
         studentId,
         month,
-        amount
+        amount: Number(amount)
       });
 
       toast.success("Fee generated");
@@ -83,12 +93,13 @@ const FeeDashboard = () => {
       toast.error("Month and amount required");
       return;
     }
+
     try {
       setLoading(true);
 
-      await apiRequest("/fees/bulk-generate", "POST", {
+      await apiRequest(API.FEES.BULK_GENERATE, "POST", {
         month: bulkMonth.trim().toLowerCase(),
-        amount: bulkAmount.trim().toLowerCase()
+        amount: Number(bulkAmount)
       });
 
       toast.success("Bulk fees generated");
@@ -99,6 +110,7 @@ const FeeDashboard = () => {
       fetchFees();
 
     } catch (error) {
+      console.error(error);
       toast.error(error.message);
     } finally {
       setLoading(false);
@@ -109,15 +121,22 @@ const FeeDashboard = () => {
 
   const markPaid = async (id) => {
     try {
-      await apiRequest(`/fees/${id}`, "PATCH", { status: "paid" });
+      await apiRequest(
+        `${API.FEES.ALL}/${id}`,
+        "PATCH",
+        { status: "paid" }
+      );
+
       toast.success("Marked as paid");
       fetchFees();
+
     } catch (error) {
+      console.error(error);
       toast.error(error.message);
     }
   };
 
-  /* ===== SORT + FILTER ===== */
+  /* ===== FILTER ===== */
 
   const sortedFees = [...fees].sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -145,101 +164,88 @@ const FeeDashboard = () => {
 
   /* ===== STATUS STYLE ===== */
 
-  const getStatusStyle = (status) => {
-
-    if (status === "paid") {
-      return {
-        background: "#dcfce7",
-        color: "#166534",
-        padding: "5px 12px",
-        borderRadius: "20px",
-        fontSize: "12px"
-      };
-    }
-
-    if (status === "overdue") {
-      return {
-        background: "#fee2e2",
-        color: "#991b1b",
-        padding: "5px 12px",
-        borderRadius: "20px",
-        fontSize: "12px",
-        fontWeight: "bold"
-      };
-    }
-
-    return {
-      background: "#fef3c7",
-      color: "#92400e",
-      padding: "5px 12px",
-      borderRadius: "20px",
-      fontSize: "12px"
-    };
-  };
-
-  /* ===== UI ===== */
+  const getStatusStyle = (status) => ({
+    padding: "5px 12px",
+    borderRadius: "20px",
+    fontSize: "12px",
+    background:
+      status === "paid"
+        ? "#dcfce7"
+        : status === "overdue"
+        ? "#fee2e2"
+        : "#fef3c7",
+    color:
+      status === "paid"
+        ? "#166534"
+        : status === "overdue"
+        ? "#991b1b"
+        : "#92400e",
+    fontWeight: status === "overdue" ? "bold" : "normal"
+  });
 
   return (
     <MainLayout>
 
-      <div style={pageWrapper}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
 
         <h2>Fee Management</h2>
 
         {/* ===== STATS ===== */}
-        <div style={statsContainer}>
-          <div style={{ ...statCard, background: "#3b82f6" }}>Total: {total}</div>
-          <div style={{ ...statCard, background: "#22c55e" }}>Paid: {paid}</div>
-          <div style={{ ...statCard, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
-          <div style={{ ...statCard, background: "#ef4444" }}>Overdue: {overdue}</div>
+        <div style={{ display: "flex", gap: "15px", marginBottom: "20px" }}>
+          <div style={{ flex: 1, background: "#3b82f6", color: "white", padding: "15px" }}>Total: {total}</div>
+          <div style={{ flex: 1, background: "#22c55e", color: "white", padding: "15px" }}>Paid: {paid}</div>
+          <div style={{ flex: 1, background: "#f59e0b", color: "white", padding: "15px" }}>Unpaid: {unpaid}</div>
+          <div style={{ flex: 1, background: "#ef4444", color: "white", padding: "15px" }}>Overdue: {overdue}</div>
         </div>
 
         {/* ===== FORMS ===== */}
         {role === "admin" && (
-          <div style={formWrapper}>
+          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
 
-            <div style={formCard}>
+            {/* BULK */}
+            <div>
               <h3>Bulk Fee</h3>
 
-              <input style={inputStyle} placeholder="Month"
+              <input placeholder="Month"
                 value={bulkMonth}
                 onChange={(e) => setBulkMonth(e.target.value)}
               />
 
-              <input style={inputStyle} placeholder="Amount"
+              <input placeholder="Amount"
                 value={bulkAmount}
                 onChange={(e) => setBulkAmount(e.target.value)}
               />
 
-              <button style={buttonPrimary} onClick={handleBulkGenerate}>
+              <button onClick={handleBulkGenerate}>
                 Generate All
               </button>
             </div>
 
-            <div style={formCard}>
+            {/* SINGLE */}
+            <div>
               <h3>Single Fee</h3>
 
-              <select style={inputStyle}
+              <select
                 value={studentId}
                 onChange={(e) => setStudentId(e.target.value)}
               >
                 <option value="">Select Student</option>
-                {students.map((s) => (
+                {students.map(s => (
                   <option key={s._id} value={s._id}>{s.name}</option>
                 ))}
               </select>
 
-              <input style={inputStyle} placeholder="Month"
+              <input placeholder="Month"
                 value={month}
                 onChange={(e) => setMonth(e.target.value)}
               />
 
-              <input style={inputStyle} placeholder="Amount"
+              <input placeholder="Amount"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
 
-              <button style={buttonPrimary} onClick={handleAddFee}>
+              <button onClick={handleAddFee}>
                 Generate Fee
               </button>
             </div>
@@ -248,11 +254,11 @@ const FeeDashboard = () => {
         )}
 
         {/* ===== TABLE ===== */}
-        <div style={tableCard}>
+        <div style={{ marginTop: "20px" }}>
 
           <h3>Fee Records</h3>
 
-          <select style={inputStyle}
+          <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           >
@@ -263,7 +269,6 @@ const FeeDashboard = () => {
           </select>
 
           <table style={tableStyle}>
-
             <thead>
               <tr>
                 <th style={thStyle}>Student</th>
@@ -276,33 +281,14 @@ const FeeDashboard = () => {
             </thead>
 
             <tbody>
-
               {Object.entries(groupedFees).map(([student, studentFees]) => (
-
                 <React.Fragment key={student}>
-
-                  <tr>
-                    <td colSpan="6" style={groupHeader}>
-                      👤 {student}
-                    </td>
-                  </tr>
-
-                  {studentFees.map((fee, index) => (
-
-                    <tr key={fee._id} style={getRowStyle(index)}>
-
-                      <td style={{ ...tdStyle, paddingLeft: "20px" }}></td>
-
-                      <td style={tdStyle}>
-                        {fee.month.charAt(0).toUpperCase() + fee.month.slice(1)}
-                      </td>
-
+                  {studentFees.map((fee) => (
+                    <tr key={fee._id}>
+                      <td style={tdStyle}>{student}</td>
+                      <td style={tdStyle}>{fee.month}</td>
                       <td style={tdStyle}>₹ {fee.amount}</td>
-
-                      <td style={tdStyle}>
-                        {new Date(fee.dueDate).toLocaleDateString()}
-                      </td>
-
+                      <td style={tdStyle}>{new Date(fee.dueDate).toLocaleDateString()}</td>
                       <td style={tdStyle}>
                         <span style={getStatusStyle(fee.status)}>
                           {fee.status}
@@ -321,15 +307,10 @@ const FeeDashboard = () => {
                       )}
 
                     </tr>
-
                   ))}
-
                 </React.Fragment>
-
               ))}
-
             </tbody>
-
           </table>
 
         </div>
@@ -339,45 +320,5 @@ const FeeDashboard = () => {
     </MainLayout>
   );
 };
-
-/* ===== STYLES ===== */
-
-const pageWrapper = { maxWidth: "1200px", margin: "0 auto" };
-
-const statsContainer = { display: "flex", gap: "15px", marginBottom: "20px" };
-
-const statCard = { flex: 1, padding: "15px", borderRadius: "10px", color: "white", textAlign: "center" };
-
-const formWrapper = { display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "20px" };
-
-const formCard = {
-  flex: 1,
-  minWidth: "300px",
-  padding: "20px",
-  borderRadius: "10px",
-  background: "#fff",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
-};
-
-const inputStyle = { padding: "10px", borderRadius: "6px", border: "1px solid #ccc" };
-
-const tableCard = {
-  background: "#fff",
-  padding: "20px",
-  borderRadius: "10px",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-  marginTop: "20px"
-};
-
-const groupHeader = {
-  background: "#f1f5f9",
-  fontWeight: "600",
-  padding: "12px",
-  borderLeft: "4px solid #3b82f6"
-};
-
-const getRowStyle = (index) => ({
-  background: index % 2 === 0 ? "#ffffff" : "#f9fafb"
-});
 
 export default FeeDashboard;
