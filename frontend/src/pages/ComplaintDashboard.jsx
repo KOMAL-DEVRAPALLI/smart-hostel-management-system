@@ -86,25 +86,27 @@ const ComplaintDashboard = () => {
 
   /* ===== RESOLVE ===== */
 
-  const resolveComplaint = async (id) => {
-    try {
-      // 🔥 IMPORTANT: Adjust method if backend differs
-      await apiRequest(`${API.COMPLAINTS.ALL}/${id}`, "PATCH") 
+ const resolveComplaint = async (id) => {
+  try {
+    await apiRequest(
+      `${API.COMPLAINTS.ALL}/${id}`,
+      "PATCH",
+      { status: "resolved" }   // ✅ THIS WAS MISSING
+    );
 
-      // Optimistic update
-      setComplaints(prev =>
-        prev.map(c =>
-          c._id === id ? { ...c, status: "resolved" } : c
-        )
-      );
+    setComplaints(prev =>
+      prev.map(c =>
+        c._id === id ? { ...c, status: "resolved" } : c
+      )
+    );
 
-      toast.success("Complaint resolved");
+    toast.success("Complaint resolved");
 
-    } catch (error) {
-      console.error("Resolve complaint error:", error);
-      toast.error(error.message || "Failed to resolve complaint");
-    }
-  };
+  } catch (error) {
+    console.error(error);
+    toast.error(error.message);
+  }
+};
 
   /* ===== STYLE ===== */
 
