@@ -89,11 +89,7 @@ const ComplaintDashboard = () => {
   const resolveComplaint = async (id) => {
     try {
       // 🔥 IMPORTANT: Adjust method if backend differs
-      await apiRequest(
-        `${API.COMPLAINTS.ALL}/resolve/${id}`,
-        "PATCH",
-        
-      );
+      await apiRequest(`${API.COMPLAINTS.ALL}/${id}`, "PATCH") 
 
       // Optimistic update
       setComplaints(prev =>
