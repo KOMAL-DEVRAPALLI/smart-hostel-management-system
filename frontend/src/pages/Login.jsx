@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { apiRequest } from "../services/api";
+import { API } from "../services/apiRoutes";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import toast from "react-hot-toast";
@@ -51,9 +52,9 @@ const LoginPage = () => {
     try {
       setLoading(true);
 
-      const data = await apiRequest("/api/auth/login", "POST", form);
+      // ✅ CENTRALIZED API
+      const data = await apiRequest(API.AUTH.LOGIN, "POST", form);
 
-      // ⚠️ For demo project only
       localStorage.setItem("token", data.token);
 
       const decoded = jwtDecode(data.token);
@@ -64,6 +65,7 @@ const LoginPage = () => {
       navigate(decoded.role === "admin" ? "/admin" : "/student");
 
     } catch (err) {
+      console.error(err); // ✅ ALWAYS LOG
       toast.error(err.message || "Login failed");
     } finally {
       setLoading(false);

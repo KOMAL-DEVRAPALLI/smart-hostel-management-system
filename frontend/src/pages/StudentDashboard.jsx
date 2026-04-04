@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import { apiGet, apiRequest } from "../services/api";
+import { API } from "../services/apiRoutes";
 import { FaBed, FaMoneyBillWave, FaExclamationCircle } from "react-icons/fa";
 import toast from "react-hot-toast";
 
@@ -16,7 +17,8 @@ const StudentDashboard = () => {
   const [selectedFee, setSelectedFee] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paying, setPaying] = useState(false);
-  const [userName , setUserName] = useState("")
+  const [userName, setUserName] = useState("");
+
   useEffect(() => {
     loadData();
   }, []);
@@ -26,22 +28,22 @@ const StudentDashboard = () => {
       setLoading(true);
 
       const [student, feeData, complaints] = await Promise.all([
-        apiGet("/students/me"),
-        apiGet("/api/fees"),
-        apiGet("/api/complaints")
+        apiGet("/api/students/me"), // keep this if not in API file
+        apiGet(API.FEES.ALL),
+        apiGet(API.COMPLAINTS.ALL)
       ]);
 
       setFees(
         feeData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       );
 
-     if (student) {
-  setUserName(student.name);
+      if (student) {
+        setUserName(student.name);
 
-  if (student?.roomId?.roomNumber) {
-    setRoomNumber(student.roomId.roomNumber);
-  }
-}
+        if (student?.roomId?.roomNumber) {
+          setRoomNumber(student.roomId.roomNumber);
+        }
+      }
 
       const pending = feeData.filter(
         f => f.status === "unpaid" || f.status === "overdue"
@@ -52,6 +54,7 @@ const StudentDashboard = () => {
       setOpenComplaints(open.length);
 
     } catch (error) {
+      console.error(error);
       toast.error(error.message || "Failed to load dashboard");
     } finally {
       setLoading(false);
@@ -70,15 +73,16 @@ const StudentDashboard = () => {
     try {
       setPaying(true);
 
-      // ✅ Better realistic transaction ID
-      const transactionId = `TXN-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+      const transactionId = `TXN-${Math.random()
+        .toString(36)
+        .substring(2, 10)
+        .toUpperCase()}`;
 
-      await apiRequest(`/fees/${selectedFee._id}`, "PATCH", {
+      await apiRequest(API.FEES.ALL + `/${selectedFee._id}`, "PATCH", {
         status: "paid",
         transactionId
       });
 
-      // ✅ Optimistic update
       setFees(prev =>
         prev.map(f =>
           f._id === selectedFee._id
@@ -102,9 +106,7 @@ const StudentDashboard = () => {
   return (
     <MainLayout>
 
-    <h2>
-  Welcome, {userName || "User"} 👋
-</h2>
+      <h2>Welcome, {userName || "User"} 👋</h2>
 
       {loading ? (
         <p>Loading dashboard...</p>
@@ -137,7 +139,6 @@ const StudentDashboard = () => {
                     <strong>{fee.month.toUpperCase()}</strong> — ₹{fee.amount}
                     <br />
 
-                    {/* ✅ STATUS BADGE */}
                     <span style={getStatusStyle(fee.status)}>
                       {fee.status}
                     </span>
@@ -210,120 +211,3 @@ const StudentDashboard = () => {
     </MainLayout>
   );
 };
-
-/* ===== COMPONENT ===== */
-
-const Card = ({ title, value, color, icon }) => (
-  <div style={{ ...cardStyle, background: color }}>
-    {icon}
-    <h3>{title}</h3>
-    <p style={numberStyle}>{value}</p>
-  </div>
-);
-
-/* ===== STATUS STYLE ===== */
-
-const getStatusStyle = (status) => ({
-  padding: "4px 10px",
-  borderRadius: "20px",
-  fontSize: "12px",
-  marginTop: "5px",
-  display: "inline-block",
-  background:
-    status === "paid" ? "#dcfce7" :
-    status === "overdue" ? "#fee2e2" :
-    "#fef3c7",
-  color:
-    status === "paid" ? "#166534" :
-    status === "overdue" ? "#991b1b" :
-    "#92400e"
-});
-
-/* ===== STYLES ===== */
-
-const cardContainer = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-  gap: "20px",
-  marginTop: "20px"
-};
-
-const cardStyle = {
-  padding: "25px",
-  borderRadius: "12px",
-  color: "white",
-  textAlign: "center"
-};
-
-const numberStyle = {
-  fontSize: "28px",
-  fontWeight: "bold"
-};
-
-const feeContainer = {
-  marginTop: "30px",
-  background: "#fff",
-  padding: "20px",
-  borderRadius: "10px"
-};
-
-const feeCard = {
-  display: "flex",
-  justifyContent: "space-between",
-  padding: "12px",
-  borderBottom: "1px solid #eee",
-  alignItems: "center"
-};
-
-const payButton = {
-  background: "#22c55e",
-  color: "white",
-  padding: "6px 12px",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer"
-};
-
-const cancelButton = {
-  background: "#ef4444",
-  color: "white",
-  padding: "6px 12px",
-  border: "none",
-  borderRadius: "6px",
-  marginLeft: "10px"
-};
-
-const modalOverlay = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100%",
-  height: "100%",
-  background: "rgba(0,0,0,0.5)",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center"
-};
-
-const modalBox = {
-  background: "#fff",
-  padding: "25px",
-  borderRadius: "10px",
-  width: "300px",
-  textAlign: "center"
-};
-
-const inputStyle = {
-  padding: "10px",
-  width: "100%",
-  borderRadius: "6px",
-  border: "1px solid #ccc"
-};
-
-const emptyState = {
-  textAlign: "center",
-  padding: "20px",
-  color: "#6b7280"
-};
-
-export default StudentDashboard;

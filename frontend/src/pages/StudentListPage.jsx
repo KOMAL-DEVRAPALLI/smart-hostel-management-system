@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiGet, apiRequest } from "../services/api";
+import { API } from "../services/apiRoutes";
 import { Link } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 
@@ -46,14 +47,15 @@ const StudentListPage = () => {
       setLoading(true);
 
       const [studentsData, roomsData] = await Promise.all([
-        apiGet("/api/students"),
-        apiGet("/api/rooms")
+        apiGet(API.STUDENTS.ALL),
+        apiGet(API.ROOMS.ALL)
       ]);
 
       setStudents(studentsData);
       setRooms(roomsData);
 
     } catch (error) {
+      console.error(error);
       toast.error("Failed to load data");
     } finally {
       setLoading(false);
@@ -76,9 +78,11 @@ const StudentListPage = () => {
 
   const confirmDeactivate = async () => {
     try {
-      await apiRequest(`/students/${selectedId}/deactivate`, "PATCH");
+      await apiRequest(
+        `${API.STUDENTS.ALL}/${selectedId}/deactivate`,
+        "PATCH"
+      );
 
-      // ✅ Optimistic update
       setStudents(prev =>
         prev.filter(s => s._id !== selectedId)
       );
@@ -104,10 +108,14 @@ const StudentListPage = () => {
     try {
       setActionLoading(true);
 
-      await apiRequest("/students/allocate-room", "POST", {
-        studentId: selectedStudentId,
-        roomId: selectedRoomId
-      });
+      await apiRequest(
+        `${API.STUDENTS.ALL}/allocate-room`,
+        "POST",
+        {
+          studentId: selectedStudentId,
+          roomId: selectedRoomId
+        }
+      );
 
       toast.success("Room allocated");
 
@@ -129,7 +137,11 @@ const StudentListPage = () => {
     try {
       setActionLoading(true);
 
-      await apiRequest("/students/auto-allocate", "POST", { studentId: id });
+      await apiRequest(
+        `${API.STUDENTS.ALL}/auto-allocate`,
+        "POST",
+        { studentId: id }
+      );
 
       toast.success("Auto allocated");
 
@@ -148,9 +160,12 @@ const StudentListPage = () => {
     try {
       setActionLoading(true);
 
-      await apiRequest("/students/deallocate-room", "PATCH", { studentId: id });
+      await apiRequest(
+        `${API.STUDENTS.ALL}/deallocate-room`,
+        "PATCH",
+        { studentId: id }
+      );
 
-      // ✅ Optimistic update
       setStudents(prev =>
         prev.map(s =>
           s._id === id ? { ...s, roomId: null } : s
@@ -227,7 +242,6 @@ const StudentListPage = () => {
                         </td>
 
                         <td style={tdStyle}>
-
                           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
 
                             {!student.roomId && (
@@ -260,7 +274,6 @@ const StudentListPage = () => {
                             )}
 
                           </div>
-
                         </td>
 
                       </tr>

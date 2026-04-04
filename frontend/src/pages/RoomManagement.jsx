@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiRequest, apiGet } from "../services/api";
+import { API } from "../services/apiRoutes";
 import MainLayout from "../components/layout/MainLayout";
 import {
   tableStyle,
@@ -14,8 +15,6 @@ import toast from "react-hot-toast";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 
 const RoomManagement = () => {
-
-  // ---------- STATE ----------
 
   const [rooms, setRooms] = useState([]);
 
@@ -34,9 +33,10 @@ const RoomManagement = () => {
 
   const fetchRooms = async () => {
     try {
-      const data = await apiGet("/api/rooms");
+      const data = await apiGet(API.ROOMS.ALL);
       setRooms(data);
-    } catch(error) {
+    } catch (error) {
+      console.error(error);
       toast.error(error.message);
     }
   };
@@ -44,7 +44,6 @@ const RoomManagement = () => {
   useEffect(() => {
     fetchRooms();
   }, []);
-
 
 
   // ---------- ADD ROOM ----------
@@ -57,10 +56,9 @@ const RoomManagement = () => {
     }
 
     try {
-
       setLoading(true);
 
-      await apiRequest("/rooms", "POST", {
+      await apiRequest(API.ROOMS.ALL, "POST", {
         roomNumber,
         capacity
       });
@@ -72,62 +70,49 @@ const RoomManagement = () => {
 
       fetchRooms();
 
-    } catch(error) {
-
+    } catch (error) {
       toast.error(error.message);
-
     } finally {
-
       setLoading(false);
-
     }
 
   };
 
 
-
   // ---------- EDIT ROOM ----------
 
   const handleEdit = (room) => {
-
     setRoomNumber(room.roomNumber);
     setCapacity(room.capacity);
     setEditId(room._id);
-
   };
-
 
 
   // ---------- UPDATE ROOM ----------
 
- const handleUpdate = async () => {
+  const handleUpdate = async () => {
+    try {
 
-  try {
+      await apiRequest(`${API.ROOMS.ALL}/${editId}`, "PUT", {
+        roomNumber,
+        capacity
+      });
 
-    await apiRequest(`/rooms/${editId}`, "PUT", {
-      roomNumber,
-      capacity
-    });
+      toast.success("Room updated successfully");
 
-    toast.success("Room updated successfully");
+      setRoomNumber("");
+      setCapacity("");
+      setEditId(null);
 
-    setRoomNumber("");
-    setCapacity("");
-    setEditId(null);
+      fetchRooms();
 
-    fetchRooms();
-
-  } catch (error) {
-
-    toast.error(error.message);
-
-  }
-
-};
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
 
-
-  // ---------- OPEN CONFIRM DIALOG ----------
+  // ---------- OPEN CONFIRM ----------
 
   const openDeactivateDialog = (id) => {
     setSelectedId(id);
@@ -135,15 +120,13 @@ const RoomManagement = () => {
   };
 
 
-
   // ---------- CONFIRM DEACTIVATE ----------
 
   const confirmDeactivate = async () => {
-
     try {
 
       await apiRequest(
-        `/rooms/${selectedId}/deactivate`,
+        `${API.ROOMS.ALL}/${selectedId}/deactivate`,
         "PATCH"
       );
 
@@ -151,31 +134,25 @@ const RoomManagement = () => {
 
       fetchRooms();
 
-    } catch(error) {
-
+    } catch (error) {
       toast.error(error.message);
-
     }
 
     setConfirmOpen(false);
-
   };
-
 
 
   // ---------- UI ----------
 
   return (
-
     <MainLayout>
 
       <div style={tableContainer}>
 
         <h2>Room Management</h2>
-
         <hr />
 
-        {/* ---------- ROOM TABLE ---------- */}
+        {/* ---------- TABLE ---------- */}
 
         <table style={tableStyle}>
 
@@ -190,20 +167,17 @@ const RoomManagement = () => {
           </thead>
 
           <tbody>
-
             {rooms
               .filter(room => room.status === "active")
               .map((room) => (
 
                 <tr key={room._id}>
-
                   <td style={tdStyle}>{room.roomNumber}</td>
                   <td style={tdStyle}>{room.capacity}</td>
                   <td style={tdStyle}>{room.occupiedCount}</td>
                   <td style={tdStyle}>{room.status}</td>
 
                   <td style={tdStyle}>
-
                     <button
                       style={buttonPrimary}
                       onClick={() => handleEdit(room)}
@@ -219,31 +193,24 @@ const RoomManagement = () => {
                     >
                       Deactivate
                     </button>
-
                   </td>
-
                 </tr>
 
             ))}
-
           </tbody>
 
         </table>
-<hr style={{ margin: "20px 0", opacity: 0.2 }} />
 
+        <hr style={{ margin: "20px 0", opacity: 0.2 }} />
 
         {/* ---------- FORM ---------- */}
 
-        <h3>
-          {editId ? "Update Room" : "Add Room"}
-        </h3>
+        <h3>{editId ? "Update Room" : "Add Room"}</h3>
 
         <input
           placeholder="Room Number"
           value={roomNumber}
-          onChange={(e) =>
-            setRoomNumber(e.target.value)
-          }
+          onChange={(e) => setRoomNumber(e.target.value)}
         />
 
         <br /><br />
@@ -251,16 +218,12 @@ const RoomManagement = () => {
         <input
           placeholder="Capacity"
           value={capacity}
-          onChange={(e) =>
-            setCapacity(Number(e.target.value))
-          }
+          onChange={(e) => setCapacity(Number(e.target.value))}
         />
 
         <br /><br />
 
-
         {editId ? (
-
           <button
             style={buttonPrimary}
             onClick={handleUpdate}
@@ -268,9 +231,7 @@ const RoomManagement = () => {
           >
             Update Room
           </button>
-
         ) : (
-
           <button
             style={buttonPrimary}
             onClick={handleAddRoom}
@@ -278,12 +239,9 @@ const RoomManagement = () => {
           >
             Add Room
           </button>
-
         )}
 
       </div>
-
-
 
       {/* ---------- CONFIRM MODAL ---------- */}
 
@@ -296,9 +254,7 @@ const RoomManagement = () => {
       />
 
     </MainLayout>
-
   );
-
 };
 
 export default RoomManagement;

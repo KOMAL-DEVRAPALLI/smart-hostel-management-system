@@ -55,7 +55,7 @@ const FeeDashboard = () => {
     try {
       setLoading(true);
 
-      await apiRequest("/fees", "POST", {
+      await apiRequest("/api/fees", "POST", {
         studentId,
         month,
         amount

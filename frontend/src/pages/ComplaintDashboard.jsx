@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiGet, apiRequest } from "../services/api";
+import { API } from "../services/apiRoutes";
 import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
 
@@ -20,9 +21,10 @@ function ComplaintDashboard() {
   const fetchComplaints = async () => {
     try {
       setLoading(true);
-      const data = await apiGet("/api/complaints");
+      const data = await apiGet(API.COMPLAINTS.ALL);
       setComplaints(data);
     } catch (error) {
+      console.error(error);
       toast.error(error.message || "Failed to load complaints");
     } finally {
       setLoading(false);
@@ -56,9 +58,13 @@ function ComplaintDashboard() {
     try {
       setSubmitting(true);
 
-      const newComplaint = await apiRequest("/complaints", "POST", form);
+      const newComplaint = await apiRequest(
+        API.COMPLAINTS.ALL,
+        "POST",
+        form
+      );
 
-      // ✅ Optimistic update (NO refetch)
+      // ✅ Optimistic update
       setComplaints([newComplaint, ...complaints]);
 
       toast.success("Complaint submitted");
@@ -76,11 +82,12 @@ function ComplaintDashboard() {
 
   const resolveComplaint = async (id) => {
     try {
-      await apiRequest(`/complaints/${id}`, "PATCH", {
-        status: "resolved"
-      });
+      await apiRequest(
+        `${API.COMPLAINTS.ALL}/${id}`,
+        "PATCH",
+        { status: "resolved" }
+      );
 
-      // ✅ Update locally instead of refetch
       setComplaints(prev =>
         prev.map(c =>
           c._id === id ? { ...c, status: "resolved" } : c
@@ -215,6 +222,7 @@ function ComplaintDashboard() {
     </MainLayout>
   );
 }
+
 
 /* ===== STYLES (same, slightly cleaned) ===== */
 

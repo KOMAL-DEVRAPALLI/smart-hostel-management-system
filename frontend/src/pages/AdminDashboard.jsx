@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import { apiGet, apiRequest } from "../services/api";
+import { API } from "../services/apiRoutes";
 import {
   FaUsers,
   FaBed,
@@ -11,7 +12,6 @@ import toast from "react-hot-toast";
 import ConfirmDialog from "../components/ConfirmDialog";
 
 const AdminDashboard = () => {
-
   const [loading, setLoading] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
@@ -33,12 +33,12 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
 
-      // 🚀 Parallel API calls (IMPORTANT FIX)
+      // ✅ USING CENTRALIZED API ROUTES
       const [students, rooms, fees, complaints] = await Promise.all([
-        apiGet("/api/students"),
-        apiGet("/api/rooms"),
-        apiGet("/api/fees"),
-        apiGet("/api/complaints")
+        apiGet(API.STUDENTS.ALL),
+        apiGet(API.ROOMS.ALL),
+        apiGet(API.FEES.ALL),
+        apiGet(API.COMPLAINTS.ALL)
       ]);
 
       const activeRooms = rooms.filter(r => r.status === "active").length;
@@ -54,7 +54,8 @@ const AdminDashboard = () => {
 
       generateInsights(rooms, fees, complaints);
 
-    } catch {
+    } catch (error) {
+      console.error(error); // ✅ DON'T HIDE ERRORS
       toast.error("Error loading dashboard");
     } finally {
       setLoading(false);
@@ -64,7 +65,6 @@ const AdminDashboard = () => {
   /* ===== SMART INSIGHTS ===== */
 
   const generateInsights = (rooms, fees, complaints) => {
-
     const list = [];
 
     const overdue = fees.filter(f => f.status === "overdue");
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
     try {
       setLoadingAction(true);
 
-      const res = await apiRequest("/students/auto-allocate-all", "POST");
+      const res = await apiRequest(API.STUDENTS.AUTO_ALLOCATE, "POST");
 
       toast.success(res.message || "Auto allocation completed");
       loadStats();
@@ -113,12 +113,11 @@ const AdminDashboard = () => {
 
   const handleGenerateAllFees = async () => {
     try {
-
       const currentMonth = new Date().toLocaleString("default", {
         month: "long"
       });
 
-      await apiRequest("/fees/bulk-generate", "POST", {
+      await apiRequest(API.FEES.BULK_GENERATE, "POST", {
         month: currentMonth,
         amount: 5000
       });
@@ -133,7 +132,6 @@ const AdminDashboard = () => {
 
   return (
     <MainLayout>
-
       <div style={headerSection}>
         <h1 style={pageTitle}>Admin Dashboard</h1>
         <p style={subtitle}>
@@ -156,7 +154,6 @@ const AdminDashboard = () => {
           {/* ===== INSIGHTS ===== */}
           <div style={insightContainer}>
             <h3>Smart Insights</h3>
-
             {insights.map((item, index) => (
               <div key={index} style={insightCard}>
                 {item}
@@ -169,7 +166,6 @@ const AdminDashboard = () => {
             <h3>⚡ Smart Actions</h3>
 
             <div style={actionButtons}>
-
               <button
                 style={actionBtn}
                 onClick={() => setConfirmOpen(true)}
@@ -184,7 +180,6 @@ const AdminDashboard = () => {
               >
                 Generate Monthly Fees
               </button>
-
             </div>
           </div>
         </>
@@ -197,7 +192,6 @@ const AdminDashboard = () => {
         onConfirm={confirmAutoAllocate}
         onCancel={() => setConfirmOpen(false)}
       />
-
     </MainLayout>
   );
 };
@@ -212,7 +206,7 @@ const StatCard = ({ title, value, gradient, icon }) => (
   </div>
 );
 
-/* ===== STYLES (same as yours) ===== */
+/* ===== STYLES ===== */
 
 const actionContainer = {
   marginTop: "30px",

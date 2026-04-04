@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { apiRequest } from "../services/api";
+import { API } from "../services/apiRoutes";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
@@ -22,7 +23,6 @@ const AddStudentPage = () => {
 
   const [loading, setLoading] = useState(false);
 
-  // Handle input change (cleaner than multiple states)
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -30,7 +30,6 @@ const AddStudentPage = () => {
     });
   };
 
-  // Validation function (more professional)
   const validateForm = () => {
     const { name, phone, email, password } = formData;
 
@@ -65,13 +64,15 @@ const AddStudentPage = () => {
     try {
       setLoading(true);
 
-      await apiRequest("/students", "POST", formData);
+      // ✅ CENTRALIZED API
+      await apiRequest(API.STUDENTS.ALL, "POST", formData);
 
       toast.success("Student added successfully");
 
       navigate("/students");
 
     } catch (error) {
+      console.error(error); // ✅ DON'T HIDE ERRORS
       toast.error(error.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -155,7 +156,6 @@ const AddStudentPage = () => {
   );
 };
 
-// Clean styles (instead of messy inline everywhere)
 const styles = {
   card: {
     background: "#fff",

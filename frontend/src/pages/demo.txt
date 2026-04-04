@@ -48,7 +48,7 @@ const RoomManagement = () => {
 
       setLoading(true);
 
-      await apiRequest("/rooms", "POST", {
+      await apiRequest("/api/rooms", "POST", {
         roomNumber,
         capacity
       });
