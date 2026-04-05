@@ -161,6 +161,40 @@ const FeeDashboard = () => {
   const paid = fees.filter((f) => f.status === "paid").length;
   const unpaid = fees.filter((f) => f.status === "unpaid").length;
   const overdue = fees.filter((f) => f.status === "overdue").length;
+  const handlePayment = async (fee) => {
+  try {
+    const { data: order } = await apiRequest(
+      "/api/payment/order",
+      "POST",
+      { amount: fee.amount }
+    );
+
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY,
+      amount: order.amount,
+      currency: "INR",
+      name: "Hostel Fees",
+      order_id: order.id,
+
+      handler: async function (response) {
+        await apiRequest("/api/payment/verify", "POST", {
+          ...response,
+          feeId: fee._id, // IMPORTANT
+        });
+
+        toast.success("Payment successful");
+        fetchFees(); // refresh UI
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Payment failed");
+  }
+};
 
   /* ================= UI ================= */
 
@@ -302,7 +336,23 @@ const FeeDashboard = () => {
                             </button>
                           )}
                         </td>
+                        
                       )}
+                      <td style={td}>
+  {role === "admin" ? (
+    b.status !== "paid" && (
+      <button style={btnSmall} onClick={() => markPaid(b._id)}>
+        Mark Paid
+      </button>
+    )
+  ) : (
+    b.status !== "paid" && (
+      <button style={btnSmall} onClick={() => handlePayment(b)}>
+        Pay Now
+      </button>
+    )
+  )}
+</td>
                     </tr>
                   ))}
                 </React.Fragment>
