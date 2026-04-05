@@ -19,7 +19,17 @@ const FeeDashboard = () => {
   const [loading, setLoading] = useState(false);
 
   const role = localStorage.getItem("role");
+  const convertMonth = (value) => {
+    const months = [
+      "january", "february", "march", "april", "may", "june",
+      "july", "august", "september", "october", "november", "december"
+    ];
 
+    if (!value) return "";
+
+    const index = parseInt(value.split("-")[1], 10) - 1;
+    return months[index];
+  };
   /* ================= FETCH ================= */
 
   const fetchStudents = async () => {
@@ -63,7 +73,7 @@ const FeeDashboard = () => {
 
       await apiRequest(API.FEES.ALL, "POST", {
         studentId,
-        month,
+        month: convertMonth(month),
         amount: Number(amount),
       });
 
@@ -98,7 +108,7 @@ const FeeDashboard = () => {
       setLoading(true);
 
       await apiRequest(API.FEES.BULK_GENERATE, "POST", {
-        month: bulkMonth,
+        month: convertMonth(bulkMonth),
         amount: Number(bulkAmount),
       });
 
@@ -170,17 +180,16 @@ const FeeDashboard = () => {
         {/* FORMS */}
         {role === "admin" && (
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
-            
+
             {/* BULK */}
             <div style={box}>
               <h3>Bulk Billing</h3>
-
-              <input
-                
-                style={input}
-                value={bulkMonth}
-                onChange={(e) => setBulkMonth(e.target.value)}
-              />
+<input
+  type="month"
+  style={input}
+  value={bulkMonth}
+  onChange={(e) => setBulkMonth(e.target.value)}
+/>
 
               <input
                 style={input}
@@ -364,8 +373,8 @@ const statusStyle = (status) => ({
     status === "paid"
       ? "#dcfce7"
       : status === "overdue"
-      ? "#fee2e2"
-      : "#fef3c7",
+        ? "#fee2e2"
+        : "#fef3c7",
   padding: "4px 10px",
   borderRadius: 20,
 });
