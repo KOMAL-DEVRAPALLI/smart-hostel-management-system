@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 
 import connectDB from "./config/db.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 import studentRoutes from "./routes/studentRoutes.js";
 import roomRoutes from "./routes/roomRoutes.js";
@@ -29,7 +30,7 @@ app.use(
 );
 
 app.use(express.json());
-
+// console.log("ENV CHECK:", process.env.RAZORPAY_KEY_ID);
 
 // ================= TEST ROUTE =================
 
@@ -51,6 +52,7 @@ app.use("/api/fees", feeRoutes);
 app.use("/api/complaints", complaintRoutes);
 
 
+app.use("/api/payment", paymentRoutes);
 // ================= SERVER =================
 
 const PORT = process.env.PORT || 4000;
