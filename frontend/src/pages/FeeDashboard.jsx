@@ -162,12 +162,16 @@ const FeeDashboard = () => {
   const unpaid = fees.filter((f) => f.status === "unpaid").length;
   const overdue = fees.filter((f) => f.status === "overdue").length;
   const handlePayment = async (fee) => {
+  console.log("PAYMENT CLICKED", fee);  // ✅ ADD HERE
+
   try {
     const { data: order } = await apiRequest(
       "/api/payment/order",
       "POST",
       { amount: fee.amount }
     );
+
+    console.log("ORDER:", order); // ✅ also add this
 
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY,
@@ -177,13 +181,15 @@ const FeeDashboard = () => {
       order_id: order.id,
 
       handler: async function (response) {
+        console.log("PAYMENT SUCCESS RESPONSE:", response); // ✅ add this too
+
         await apiRequest("/api/payment/verify", "POST", {
           ...response,
-          feeId: fee._id, // IMPORTANT
+          feeId: fee._id,
         });
 
         toast.success("Payment successful");
-        fetchFees(); // refresh UI
+        fetchFees();
       },
     };
 
@@ -191,7 +197,7 @@ const FeeDashboard = () => {
     rzp.open();
 
   } catch (err) {
-    console.error(err);
+    console.error("ERROR:", err); // ✅ important
     toast.error("Payment failed");
   }
 };
@@ -325,33 +331,10 @@ const FeeDashboard = () => {
                         </span>
                       </td>
 
-                      {role === "admin" && (
-                        <td style={td}>
-                          {b.status !== "paid" && (
-                            <button
-                              style={btnSmall}
-                              onClick={() => markPaid(b._id)}
-                            >
-                              Mark Paid
-                            </button>
-                          )}
-                        </td>
-                        
-                      )}
-                      <td style={td}>
-  {role === "admin" ? (
-    b.status !== "paid" && (
-      <button style={btnSmall} onClick={() => markPaid(b._id)}>
-        Mark Paid
-      </button>
-    )
-  ) : (
-    b.status !== "paid" && (
-      <button style={btnSmall} onClick={() => handlePayment(b)}>
-        Pay Now
-      </button>
-    )
-  )}
+                     <td>
+  <button onClick={() => handlePayment(b)}>
+    Pay Now
+  </button>
 </td>
                     </tr>
                   ))}
