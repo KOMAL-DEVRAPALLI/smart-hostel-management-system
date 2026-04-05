@@ -150,7 +150,12 @@ const FeeDashboard = () => {
   const paid = fees.filter(f => f.status === "paid").length;
   const unpaid = fees.filter(f => f.status === "unpaid").length;
   const overdue = fees.filter(f => f.status === "overdue").length;
-
+<input
+  style={input}
+  type="month"
+  value={month}
+  onChange={(e) => setMonth(e.target.value)}
+/>
 
   /* ===== UI ===== */
 
@@ -259,33 +264,45 @@ const FeeDashboard = () => {
             </thead>
 
             <tbody>
-              {filteredFees.map(b => (
-                <tr key={b._id}>
-                  <td style={td}>{b.studentId?.name}</td>
-                  <td style={td}>{b.month}</td>
-                  <td style={td}>₹ {b.amount}</td>
-                  <td style={td}>
-                    {new Date(b.dueDate).toLocaleDateString()}
-                  </td>
-                  <td style={td}>
-                    <span style={statusStyle(b.status)}>
-                      {b.status}
-                    </span>
-                  </td>
+  {Object.entries(groupedFees).map(([student, records]) => (
+    <React.Fragment key={student}>
+      
+      {/* Student Header */}
+      <tr>
+        <td colSpan="6" style={{ fontWeight: "bold", background: "#f3f4f6" }}>
+          {student}
+        </td>
+      </tr>
 
-                  {role === "admin" && (
-                    <td style={td}>
-                      {b.status !== "paid" && (
-                        <button style={btnSmall} onClick={() => markPaid(b._id)}>
-                          Mark Paid
-                        </button>
-                      )}
-                    </td>
-                  )}
+      {/* Student Records */}
+      {records.map(b => (
+        <tr key={b._id}>
+          <td style={td}></td>
+          <td style={td}>{b.month}</td>
+          <td style={td}>₹ {b.amount}</td>
+          <td style={td}>
+            {new Date(b.dueDate).toLocaleDateString()}
+          </td>
+          <td style={td}>
+            <span style={statusStyle(b.status)}>
+              {b.status}
+            </span>
+          </td>
 
-                </tr>
-              ))}
-            </tbody>
+          {role === "admin" && (
+            <td style={td}>
+              {b.status !== "paid" && (
+                <button style={btnSmall} onClick={() => markPaid(b._id)}>
+                  Mark Paid
+                </button>
+              )}
+            </td>
+          )}
+        </tr>
+      ))}
+    </React.Fragment>
+  ))}
+</tbody>
 
           </table>
 
