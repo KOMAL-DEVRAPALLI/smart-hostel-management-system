@@ -54,7 +54,7 @@ app.use("/api/complaints", complaintRoutes);
 
 app.use("/api/payment", paymentRoutes);
 // ================= SERVER =================
-
+console.log("PAYMENT ROUTES LOADED");
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
