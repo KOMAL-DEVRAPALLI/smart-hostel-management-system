@@ -188,28 +188,138 @@ const FeeDashboard = () => {
   return (
     <MainLayout>
 
-      <div style={pageWrapper}>
+      <div style={wrapper}>
 
-        <h2>Fee Management</h2>
+        <h2>Billing & Payments</h2>
 
         {/* ===== STATS ===== */}
-        <div style={statsContainer}>
-          <div style={{ ...statCard, background: "#3b82f6" }}>Total: {total}</div>
-          <div style={{ ...statCard, background: "#22c55e" }}>Paid: {paid}</div>
-          <div style={{ ...statCard, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
-          <div style={{ ...statCard, background: "#ef4444" }}>Overdue: {overdue}</div>
+        <div style={stats}>
+          <div style={{ ...card, background: "#16a34a" }}>Total: {total}</div>
+          <div style={{ ...card, background: "#22c55e" }}>Paid: {paid}</div>
+          <div style={{ ...card, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
+          <div style={{ ...card, background: "#ef4444" }}>Overdue: {overdue}</div>
         </div>
 
         {/* ===== FORMS ===== */}
         {role === "admin" && (
-          <div style={formWrapper}>
-            {/* UI untouched */}
+          <div style={forms}>
+
+            <div style={box}>
+              <h3>Bulk Billing</h3>
+
+              <input
+                style={input}
+                placeholder="Month"
+                value={bulkMonth}
+                onChange={(e) => setBulkMonth(e.target.value)}
+              />
+
+              <input
+                style={input}
+                placeholder="Amount"
+                value={bulkAmount}
+                onChange={(e) => setBulkAmount(e.target.value)}
+              />
+
+              <button style={btn} onClick={handleBulkGenerate}>
+                Generate Bills
+              </button>
+            </div>
+
+            <div style={box}>
+              <h3>Single Billing</h3>
+
+              <select
+                style={input}
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+              >
+                <option value="">Select User</option>
+                {users.map(u => (
+                  <option key={u._id} value={u._id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                style={input}
+                placeholder="Month"
+                value={month}
+                onChange={(e) => setMonth(e.target.value)}
+              />
+
+              <input
+                style={input}
+                placeholder="Amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+
+              <button style={btn} onClick={handleAddBill}>
+                Generate Bill
+              </button>
+            </div>
+
           </div>
         )}
 
         {/* ===== TABLE ===== */}
-        <div style={tableCard}>
-          {/* UI untouched */}
+        <div style={box}>
+
+          <h3>Billing Records</h3>
+
+          <select style={input} value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <option value="all">All</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="overdue">Overdue</option>
+          </select>
+
+          <table style={table}>
+
+            <thead>
+              <tr>
+                <th style={th}>User</th>
+                <th style={th}>Month</th>
+                <th style={th}>Amount</th>
+                <th style={th}>Due Date</th>
+                <th style={th}>Status</th>
+                {role === "admin" && <th style={th}>Action</th>}
+              </tr>
+            </thead>
+
+            <tbody>
+              {filtered.map(b => (
+                <tr key={b._id}>
+                  <td style={td}>{b.studentId?.name}</td>
+                  <td style={td}>{b.month}</td>
+                  <td style={td}>₹ {b.amount}</td>
+                  <td style={td}>
+                    {new Date(b.dueDate).toLocaleDateString()}
+                  </td>
+                  <td style={td}>
+                    <span style={statusStyle(b.status)}>
+                      {b.status}
+                    </span>
+                  </td>
+
+                  {role === "admin" && (
+                    <td style={td}>
+                      {b.status !== "paid" && (
+                        <button style={btnSmall} onClick={() => markPaid(b._id)}>
+                          Mark Paid
+                        </button>
+                      )}
+                    </td>
+                  )}
+
+                </tr>
+              ))}
+            </tbody>
+
+          </table>
+
         </div>
 
       </div>
