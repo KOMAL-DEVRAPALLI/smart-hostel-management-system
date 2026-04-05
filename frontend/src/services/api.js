@@ -1,4 +1,4 @@
-const BASE_URL = "https://hostel-backendcv-zed6.onrender.com";
+const BASE_URL = "https://backend-qlmf.onrender.com";
 
 const handleResponse = async (response) => {
   if (response.status === 401) {
