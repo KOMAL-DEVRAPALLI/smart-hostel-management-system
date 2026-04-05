@@ -9,6 +9,7 @@ import {
   buttonPrimary
 } from "../styles/uiStyles";
 import toast from "react-hot-toast";
+import { API } from "../services/apiRoutes";
 
 const FeeDashboard = () => {
 
@@ -26,17 +27,24 @@ const FeeDashboard = () => {
   const [loading, setLoading] = useState(false);
 
   const role = localStorage.getItem("role");
-
   /* ===== FETCH ===== */
 
   const fetchStudents = async () => {
-    const data = await apiGet("/api/students");
-    setStudents(data);
+    try {
+      const data = await apiGet(API.STUDENTS.ALL);
+      setStudents(data);
+    } catch (err) {
+      toast.error("Failed to fetch students")
+    }
   };
 
   const fetchFees = async () => {
-    const data = await apiGet("/api/fees");
-    setFees(data);
+    try {
+      const data = await apiGet(API.FEES.ALL);
+      setFees(data);
+    } catch (err) {
+      toast.error("Failed to fetch fees");
+    }
   };
 
   useEffect(() => {
@@ -56,10 +64,11 @@ const FeeDashboard = () => {
       setLoading(true);
 
       // ✅ FIXED
-      await apiRequest("/api/fees", "POST", {
+      await apiRequest(API.FEES.ALL, "POST", {
         studentId,
         month,
         amount: Number(amount)
+
       });
 
       toast.success("Fee generated");
@@ -89,7 +98,7 @@ const FeeDashboard = () => {
       setLoading(true);
 
       // ✅ FIXED
-      await apiRequest("/api/fees/bulk-generate", "POST", {
+      await apiRequest(API.FEES.BULK_GENERATE, "POST", {
         month: bulkMonth.trim().toLowerCase(),
         amount: Number(bulkAmount)
       });
@@ -113,7 +122,7 @@ const FeeDashboard = () => {
   const markPaid = async (id) => {
     try {
       // ✅ FIXED
-      await apiRequest(`/api/fees/${id}`, "PATCH", { status: "paid" });
+      await apiRequest(`${API.FEES.ALL}/${id}`, "PATCH", { status: "paid" });
 
       toast.success("Marked as paid");
       fetchFees();
@@ -133,14 +142,7 @@ const FeeDashboard = () => {
     filter === "all" ? true : f.status === filter
   );
 
-  /* ===== GROUP ===== */
-
-  const groupedFees = filteredFees.reduce((acc, fee) => {
-    const name = fee.studentId?.name || "Unknown";
-    if (!acc[name]) acc[name] = [];
-    acc[name].push(fee);
-    return acc;
-  }, {});
+  
 
   /* ===== STATS ===== */
 
@@ -149,39 +151,6 @@ const FeeDashboard = () => {
   const unpaid = fees.filter(f => f.status === "unpaid").length;
   const overdue = fees.filter(f => f.status === "overdue").length;
 
-  /* ===== STATUS STYLE ===== */
-
-  const getStatusStyle = (status) => {
-
-    if (status === "paid") {
-      return {
-        background: "#dcfce7",
-        color: "#166534",
-        padding: "5px 12px",
-        borderRadius: "20px",
-        fontSize: "12px"
-      };
-    }
-
-    if (status === "overdue") {
-      return {
-        background: "#fee2e2",
-        color: "#991b1b",
-        padding: "5px 12px",
-        borderRadius: "20px",
-        fontSize: "12px",
-        fontWeight: "bold"
-      };
-    }
-
-    return {
-      background: "#fef3c7",
-      color: "#92400e",
-      padding: "5px 12px",
-      borderRadius: "20px",
-      fontSize: "12px"
-    };
-  };
 
   /* ===== UI ===== */
 
@@ -209,6 +178,7 @@ const FeeDashboard = () => {
 
               <input
                 style={input}
+                type="month"
                 placeholder="Month"
                 value={bulkMonth}
                 onChange={(e) => setBulkMonth(e.target.value)}
@@ -231,11 +201,11 @@ const FeeDashboard = () => {
 
               <select
                 style={input}
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
               >
                 <option value="">Select User</option>
-                {users.map(u => (
+                {students.map(u => (
                   <option key={u._id} value={u._id}>
                     {u.name}
                   </option>
@@ -244,11 +214,10 @@ const FeeDashboard = () => {
 
               <input
                 style={input}
-                placeholder="Month"
+                type="month"
                 value={month}
                 onChange={(e) => setMonth(e.target.value)}
               />
-
               <input
                 style={input}
                 placeholder="Amount"
@@ -256,7 +225,7 @@ const FeeDashboard = () => {
                 onChange={(e) => setAmount(e.target.value)}
               />
 
-              <button style={btn} onClick={handleAddBill}>
+              <button style={btn} onClick={handleAddFee}>
                 Generate Bill
               </button>
             </div>
@@ -290,7 +259,7 @@ const FeeDashboard = () => {
             </thead>
 
             <tbody>
-              {filtered.map(b => (
+              {filteredFees.map(b => (
                 <tr key={b._id}>
                   <td style={td}>{b.studentId?.name}</td>
                   <td style={td}>{b.month}</td>
@@ -386,8 +355,8 @@ const statusStyle = (status) => ({
     status === "paid"
       ? "#dcfce7"
       : status === "overdue"
-      ? "#fee2e2"
-      : "#fef3c7",
+        ? "#fee2e2"
+        : "#fef3c7",
   padding: "4px 10px",
   borderRadius: 20
 });
