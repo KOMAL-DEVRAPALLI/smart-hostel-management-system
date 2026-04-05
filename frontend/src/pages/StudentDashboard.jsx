@@ -28,7 +28,7 @@ const StudentDashboard = () => {
       setLoading(true);
 
       const [student, feeData, complaints] = await Promise.all([
-        apiGet("/api/students/me"), // keep this if not in API file
+        apiGet(API.STUDENTS.ME), // keep this if not in API file
         apiGet(API.FEES.ALL),
         apiGet(API.COMPLAINTS.ALL)
       ]);

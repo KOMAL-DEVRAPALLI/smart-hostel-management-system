@@ -6,6 +6,7 @@ export const API = {
 
   STUDENTS: {
     ALL: "/api/students",
+    ME:"/api/students/me",
     AUTO_ALLOCATE: "/api/students/auto-allocate-all",
   },
 
