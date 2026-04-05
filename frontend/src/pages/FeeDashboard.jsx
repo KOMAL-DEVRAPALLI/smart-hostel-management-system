@@ -330,10 +330,65 @@ const FeeDashboard = () => {
 
 /* ===== STYLES ===== */
 
-const pageWrapper = { maxWidth: "1200px", margin: "0 auto" };
-const statsContainer = { display: "flex", gap: "15px", marginBottom: "20px" };
-const statCard = { flex: 1, padding: "15px", borderRadius: "10px", color: "white", textAlign: "center" };
-const formWrapper = { display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "20px" };
-const tableCard = { background: "#fff", padding: "20px", borderRadius: "10px", marginTop: "20px" };
+const wrapper = { maxWidth: "1200px", margin: "0 auto" };
 
+const stats = { display: "flex", gap: 10, marginBottom: 20 };
+
+const card = {
+  flex: 1,
+  padding: 15,
+  borderRadius: 10,
+  color: "#fff",
+  textAlign: "center"
+};
+
+const forms = { display: "flex", gap: 20, flexWrap: "wrap" };
+
+const box = {
+  flex: 1,
+  minWidth: 300,
+  padding: 20,
+  background: "#fff",
+  borderRadius: 10,
+  marginTop: 20
+};
+
+const input = {
+  padding: 10,
+  marginBottom: 10,
+  width: "100%"
+};
+
+const btn = {
+  background: "#16a34a",
+  color: "#fff",
+  padding: "10px",
+  border: "none",
+  borderRadius: 6
+};
+
+const btnSmall = {
+  background: "#22c55e",
+  color: "#fff",
+  padding: "6px 10px",
+  border: "none",
+  borderRadius: 6
+};
+
+const table = { width: "100%", borderCollapse: "collapse" };
+
+const th = { textAlign: "left", padding: 10 };
+
+const td = { padding: 10 };
+
+const statusStyle = (status) => ({
+  background:
+    status === "paid"
+      ? "#dcfce7"
+      : status === "overdue"
+      ? "#fee2e2"
+      : "#fef3c7",
+  padding: "4px 10px",
+  borderRadius: 20
+});
 export default FeeDashboard;
