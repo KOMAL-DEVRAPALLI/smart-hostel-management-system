@@ -183,7 +183,7 @@ const FeeDashboard = () => {
       handler: async function (response) {
         console.log("PAYMENT SUCCESS RESPONSE:", response); // ✅ add this too
 
-        await apiRequest("/api/payment/verify", "POST", {
+        await apiRequest(API.FEES.VERIFY, "POST", {
           ...response,
           feeId: fee._id,
         });
