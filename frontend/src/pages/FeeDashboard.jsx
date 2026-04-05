@@ -166,7 +166,7 @@ const FeeDashboard = () => {
 
   try {
     const { data: order } = await apiRequest(
-      "/api/payment/order",
+      API.FEES.PAYMENT,
       "POST",
       { amount: fee.amount }
     );

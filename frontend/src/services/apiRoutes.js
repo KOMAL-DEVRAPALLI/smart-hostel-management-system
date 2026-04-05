@@ -16,6 +16,7 @@ export const API = {
   FEES: {
     ALL: "/api/fees",
     BULK_GENERATE: "/api/fees/bulk-generate",
+    PAYMENT: "/api/payment/order"
   },
 
   COMPLAINTS: {
