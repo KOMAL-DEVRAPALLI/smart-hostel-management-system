@@ -1,18 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { apiGet, apiRequest } from "../services/api";
 import MainLayout from "../components/layout/MainLayout";
-import {
-  tableStyle,
-  thStyle,
-  tdStyle,
-  buttonDanger,
-  buttonPrimary
-} from "../styles/uiStyles";
 import toast from "react-hot-toast";
 import { API } from "../services/apiRoutes";
 
 const FeeDashboard = () => {
-
   const [filter, setFilter] = useState("all");
   const [students, setStudents] = useState([]);
   const [fees, setFees] = useState([]);
@@ -27,14 +19,15 @@ const FeeDashboard = () => {
   const [loading, setLoading] = useState(false);
 
   const role = localStorage.getItem("role");
-  /* ===== FETCH ===== */
+
+  /* ================= FETCH ================= */
 
   const fetchStudents = async () => {
     try {
       const data = await apiGet(API.STUDENTS.ALL);
       setStudents(data);
-    } catch (err) {
-      toast.error("Failed to fetch students")
+    } catch {
+      toast.error("Failed to fetch students");
     }
   };
 
@@ -42,17 +35,17 @@ const FeeDashboard = () => {
     try {
       const data = await apiGet(API.FEES.ALL);
       setFees(data);
-    } catch (err) {
+    } catch {
       toast.error("Failed to fetch fees");
     }
   };
 
   useEffect(() => {
-    fetchFees();
     fetchStudents();
+    fetchFees();
   }, []);
 
-  /* ===== ADD SINGLE ===== */
+  /* ================= ADD SINGLE ================= */
 
   const handleAddFee = async () => {
     if (!studentId || !month || !amount) {
@@ -60,15 +53,18 @@ const FeeDashboard = () => {
       return;
     }
 
+    if (Number(amount) <= 0) {
+      toast.error("Invalid amount");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // ✅ FIXED
       await apiRequest(API.FEES.ALL, "POST", {
         studentId,
         month,
-        amount: Number(amount)
-
+        amount: Number(amount),
       });
 
       toast.success("Fee generated");
@@ -78,7 +74,6 @@ const FeeDashboard = () => {
       setAmount("");
 
       fetchFees();
-
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -86,7 +81,7 @@ const FeeDashboard = () => {
     }
   };
 
-  /* ===== BULK ===== */
+  /* ================= BULK ================= */
 
   const handleBulkGenerate = async () => {
     if (!bulkMonth || !bulkAmount) {
@@ -94,13 +89,17 @@ const FeeDashboard = () => {
       return;
     }
 
+    if (Number(bulkAmount) <= 0) {
+      toast.error("Invalid amount");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // ✅ FIXED
       await apiRequest(API.FEES.BULK_GENERATE, "POST", {
-        month: bulkMonth.trim().toLowerCase(),
-        amount: Number(bulkAmount)
+        month: bulkMonth,
+        amount: Number(bulkAmount),
       });
 
       toast.success("Bulk fees generated");
@@ -109,7 +108,6 @@ const FeeDashboard = () => {
       setBulkAmount("");
 
       fetchFees();
-
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -117,74 +115,69 @@ const FeeDashboard = () => {
     }
   };
 
-  /* ===== MARK PAID ===== */
+  /* ================= MARK PAID ================= */
 
   const markPaid = async (id) => {
     try {
-      // ✅ FIXED
-      await apiRequest(`${API.FEES.ALL}/${id}`, "PATCH", { status: "paid" });
+      await apiRequest(`${API.FEES.ALL}/${id}`, "PATCH", {
+        status: "paid",
+      });
 
       toast.success("Marked as paid");
       fetchFees();
-
     } catch (error) {
       toast.error(error.message);
     }
   };
 
-  /* ===== SORT + FILTER ===== */
+  /* ================= FILTER ================= */
 
-  const sortedFees = [...fees].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-  );
-
-  const filteredFees = sortedFees.filter(f =>
+  const filteredFees = fees.filter((f) =>
     filter === "all" ? true : f.status === filter
   );
 
-  
+  /* ================= GROUP ================= */
 
-  /* ===== STATS ===== */
+  const groupedFees = filteredFees.reduce((acc, fee) => {
+    const name = fee.studentId?.name || "Unknown";
+    if (!acc[name]) acc[name] = [];
+    acc[name].push(fee);
+    return acc;
+  }, {});
+
+  /* ================= STATS ================= */
 
   const total = fees.length;
-  const paid = fees.filter(f => f.status === "paid").length;
-  const unpaid = fees.filter(f => f.status === "unpaid").length;
-  const overdue = fees.filter(f => f.status === "overdue").length;
-<input
-  style={input}
-  type="month"
-  value={month}
-  onChange={(e) => setMonth(e.target.value)}
-/>
+  const paid = fees.filter((f) => f.status === "paid").length;
+  const unpaid = fees.filter((f) => f.status === "unpaid").length;
+  const overdue = fees.filter((f) => f.status === "overdue").length;
 
-  /* ===== UI ===== */
+  /* ================= UI ================= */
 
   return (
     <MainLayout>
-
-      <div style={wrapper}>
-
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <h2>Billing & Payments</h2>
 
-        {/* ===== STATS ===== */}
-        <div style={stats}>
-          <div style={{ ...card, background: "#16a34a" }}>Total: {total}</div>
-          <div style={{ ...card, background: "#22c55e" }}>Paid: {paid}</div>
-          <div style={{ ...card, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
-          <div style={{ ...card, background: "#ef4444" }}>Overdue: {overdue}</div>
+        {/* STATS */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+          <div style={card("#16a34a")}>Total: {total}</div>
+          <div style={card("#22c55e")}>Paid: {paid}</div>
+          <div style={card("#f59e0b")}>Unpaid: {unpaid}</div>
+          <div style={card("#ef4444")}>Overdue: {overdue}</div>
         </div>
 
-        {/* ===== FORMS ===== */}
+        {/* FORMS */}
         {role === "admin" && (
-          <div style={forms}>
-
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+            
+            {/* BULK */}
             <div style={box}>
               <h3>Bulk Billing</h3>
 
               <input
-                style={input}
                 type="month"
-                placeholder="Month"
+                style={input}
                 value={bulkMonth}
                 onChange={(e) => setBulkMonth(e.target.value)}
               />
@@ -201,6 +194,7 @@ const FeeDashboard = () => {
               </button>
             </div>
 
+            {/* SINGLE */}
             <div style={box}>
               <h3>Single Billing</h3>
 
@@ -210,7 +204,7 @@ const FeeDashboard = () => {
                 onChange={(e) => setStudentId(e.target.value)}
               >
                 <option value="">Select User</option>
-                {students.map(u => (
+                {students.map((u) => (
                   <option key={u._id} value={u._id}>
                     {u.name}
                   </option>
@@ -218,11 +212,12 @@ const FeeDashboard = () => {
               </select>
 
               <input
-                style={input}
                 type="month"
+                style={input}
                 value={month}
                 onChange={(e) => setMonth(e.target.value)}
               />
+
               <input
                 style={input}
                 placeholder="Amount"
@@ -234,24 +229,25 @@ const FeeDashboard = () => {
                 Generate Bill
               </button>
             </div>
-
           </div>
         )}
 
-        {/* ===== TABLE ===== */}
+        {/* TABLE */}
         <div style={box}>
-
           <h3>Billing Records</h3>
 
-          <select style={input} value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <select
+            style={input}
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
             <option value="all">All</option>
             <option value="paid">Paid</option>
             <option value="unpaid">Unpaid</option>
             <option value="overdue">Overdue</option>
           </select>
 
-          <table style={table}>
-
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
                 <th style={th}>User</th>
@@ -264,71 +260,64 @@ const FeeDashboard = () => {
             </thead>
 
             <tbody>
-  {Object.entries(groupedFees).map(([student, records]) => (
-    <React.Fragment key={student}>
-      
-      {/* Student Header */}
-      <tr>
-        <td colSpan="6" style={{ fontWeight: "bold", background: "#f3f4f6" }}>
-          {student}
-        </td>
-      </tr>
+              {Object.entries(groupedFees).map(([student, records]) => (
+                <React.Fragment key={student}>
+                  <tr>
+                    <td colSpan="6" style={groupHeader}>
+                      {student}
+                    </td>
+                  </tr>
 
-      {/* Student Records */}
-      {records.map(b => (
-        <tr key={b._id}>
-          <td style={td}></td>
-          <td style={td}>{b.month}</td>
-          <td style={td}>₹ {b.amount}</td>
-          <td style={td}>
-            {new Date(b.dueDate).toLocaleDateString()}
-          </td>
-          <td style={td}>
-            <span style={statusStyle(b.status)}>
-              {b.status}
-            </span>
-          </td>
+                  {records.map((b) => (
+                    <tr key={b._id}>
+                      <td style={td}></td>
+                      <td style={td}>{b.month}</td>
+                      <td style={td}>₹ {b.amount}</td>
+                      <td style={td}>
+                        {new Date(b.dueDate).toLocaleDateString()}
+                      </td>
+                      <td style={td}>
+                        <span style={statusStyle(b.status)}>
+                          {b.status}
+                        </span>
+                      </td>
 
-          {role === "admin" && (
-            <td style={td}>
-              {b.status !== "paid" && (
-                <button style={btnSmall} onClick={() => markPaid(b._id)}>
-                  Mark Paid
-                </button>
-              )}
-            </td>
-          )}
-        </tr>
-      ))}
-    </React.Fragment>
-  ))}
-</tbody>
-
+                      {role === "admin" && (
+                        <td style={td}>
+                          {b.status !== "paid" && (
+                            <button
+                              style={btnSmall}
+                              onClick={() => markPaid(b._id)}
+                            >
+                              Mark Paid
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </React.Fragment>
+              ))}
+            </tbody>
           </table>
-
         </div>
 
+        {loading && <p>Processing...</p>}
       </div>
-
     </MainLayout>
   );
 };
 
-/* ===== STYLES ===== */
+/* ================= STYLES ================= */
 
-const wrapper = { maxWidth: "1200px", margin: "0 auto" };
-
-const stats = { display: "flex", gap: 10, marginBottom: 20 };
-
-const card = {
+const card = (bg) => ({
   flex: 1,
   padding: 15,
   borderRadius: 10,
   color: "#fff",
-  textAlign: "center"
-};
-
-const forms = { display: "flex", gap: 20, flexWrap: "wrap" };
+  textAlign: "center",
+  background: bg,
+});
 
 const box = {
   flex: 1,
@@ -336,13 +325,13 @@ const box = {
   padding: 20,
   background: "#fff",
   borderRadius: 10,
-  marginTop: 20
+  marginTop: 20,
 };
 
 const input = {
   padding: 10,
   marginBottom: 10,
-  width: "100%"
+  width: "100%",
 };
 
 const btn = {
@@ -350,7 +339,7 @@ const btn = {
   color: "#fff",
   padding: "10px",
   border: "none",
-  borderRadius: 6
+  borderRadius: 6,
 };
 
 const btnSmall = {
@@ -358,23 +347,27 @@ const btnSmall = {
   color: "#fff",
   padding: "6px 10px",
   border: "none",
-  borderRadius: 6
+  borderRadius: 6,
 };
 
-const table = { width: "100%", borderCollapse: "collapse" };
-
 const th = { textAlign: "left", padding: 10 };
-
 const td = { padding: 10 };
+
+const groupHeader = {
+  fontWeight: "bold",
+  background: "#f3f4f6",
+  padding: 10,
+};
 
 const statusStyle = (status) => ({
   background:
     status === "paid"
       ? "#dcfce7"
       : status === "overdue"
-        ? "#fee2e2"
-        : "#fef3c7",
+      ? "#fee2e2"
+      : "#fef3c7",
   padding: "4px 10px",
-  borderRadius: 20
+  borderRadius: 20,
 });
+
 export default FeeDashboard;
