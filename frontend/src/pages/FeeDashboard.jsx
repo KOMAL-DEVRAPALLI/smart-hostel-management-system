@@ -176,7 +176,7 @@ const FeeDashboard = () => {
               <h3>Bulk Billing</h3>
 
               <input
-                type="month"
+                
                 style={input}
                 value={bulkMonth}
                 onChange={(e) => setBulkMonth(e.target.value)}
