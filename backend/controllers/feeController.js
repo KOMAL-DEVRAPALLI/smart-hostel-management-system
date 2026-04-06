@@ -232,10 +232,9 @@ export const getFees = async (req, res) => {
     let fees;
 
     if (req.user.role === "student") {
-      const student = await Student.findOne({
-        userId: req.user.id
-      });
+const student = await Student.findOne({ userId: req.user.id });
 
+console.log("STUDENT FOUND:", student);
       if (!student) {
         return res.status(404).json({
           message: "Student not found"
