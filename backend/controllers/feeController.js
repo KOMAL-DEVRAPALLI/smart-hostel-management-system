@@ -212,13 +212,14 @@ export const generateBulkFees = async (req, res) => {
 
 export const getFees = async (req, res) => {
   try {
+    const today = new Date();
 
-    // 🔥 SAFE UPDATE
+    // 🔥 SAFE overdue update (do NOT let it break API)
     try {
       await Fee.updateMany(
         {
           status: "unpaid",
-          dueDate: { $lt: new Date() }
+          dueDate: { $lt: today }
         },
         {
           $set: { status: "overdue" }
@@ -228,13 +229,35 @@ export const getFees = async (req, res) => {
       console.error("OVERDUE UPDATE ERROR:", err);
     }
 
-    const fees = await Fee.find().populate("studentId", "name");
+    let fees;
 
-    res.json(fees);
+    if (req.user.role === "student") {
+      const student = await Student.findOne({
+        userId: req.user.id
+      });
+
+      if (!student) {
+        return res.status(404).json({
+          message: "Student not found"
+        });
+      }
+
+      fees = await Fee.find({
+        studentId: student._id
+      }).populate("studentId");
+
+    } else {
+      fees = await Fee.find().populate("studentId");
+    }
+
+    res.status(200).json(fees);
 
   } catch (error) {
     console.error("GET FEES ERROR:", error);
-    res.status(500).json({ message: "Failed to fetch fees" });
+
+    res.status(500).json({
+      message: "Error fetching fees"
+    });
   }
 };
 
