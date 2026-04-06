@@ -24,7 +24,7 @@ const StudentDashboard = () => {
 const handlePayment = async (fee) => {
   try {
     const order = await apiRequest(
-      API.FEES.PAYMENT,
+          API.PAYMENT.ORDER,
       "POST",
       { amount: fee.amount }
     );
@@ -37,7 +37,7 @@ const handlePayment = async (fee) => {
       order_id: order.id,
 
       handler: async function (response) {
-        await apiRequest(API.FEES.VERIFY, "POST", {
+        await apiRequest(API.PAYMENT.VERIFY, "POST", {
           ...response,
           feeId: fee._id,
         });
