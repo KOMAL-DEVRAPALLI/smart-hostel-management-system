@@ -22,7 +22,9 @@ const StudentDashboard = () => {
   useEffect(() => {
     loadData();
   }, []);
-
+  const actionableFees = fees.filter(
+  (f) => f.status === "unpaid" || f.status === "overdue"
+);
   const loadData = async () => {
     try {
       setLoading(true);
@@ -126,13 +128,13 @@ const StudentDashboard = () => {
 
             <h3>My Fees</h3>
 
-            {fees.length === 0 ? (
-              <div style={emptyState}>
-                <h4>No Fees Yet</h4>
-                <p>Your fee records will appear here once generated</p>
-              </div>
+           {actionableFees.length === 0 ? (
+  <div style={emptyState}>
+    <h4>No Pending Fees 🎉</h4>
+    <p>You are all clear!</p>
+  </div>
             ) : (
-              fees.map(fee => (
+              actionableFees.map(fee => (
                 <div key={fee._id} style={feeCard}>
 
                   <div>
