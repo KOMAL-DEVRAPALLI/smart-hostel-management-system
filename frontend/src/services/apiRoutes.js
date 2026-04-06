@@ -18,7 +18,8 @@ export const API = {
     ALL: "/api/fees",
     BULK_GENERATE: "/api/fees/bulk-generate",
     PAYMENT: "/api/payment/order",
-    VERIFY:"/api/payment/verify"
+    VERIFY:"/api/payment/verify",
+    RAZORPAY:"/api/payment/verify"
   },
 
   COMPLAINTS: {

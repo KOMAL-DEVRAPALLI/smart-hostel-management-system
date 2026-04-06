@@ -185,7 +185,7 @@ handler: async function (response) {
   try {
     console.log("STEP1: Sending verify request...");
 
-    const verifyRes = await apiRequest("/api/payment/verify", "POST", {
+    const verifyRes = await apiRequest(API.FEES.RAZORPAY, "POST", {
       ...response,
       feeId: fee._id,
     });
