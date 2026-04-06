@@ -179,15 +179,25 @@ const FeeDashboard = () => {
       currency: "INR",
       name: "Hostel Fees",
       order_id: order.id,
+handler: async function (response) {
+  console.log("STEP1: PAYMENT SUCCESS RESPONSE", response);
 
-      handler: async function (response) {
-        await apiRequest("/api/payment/verify", "POST", {
-          ...response,
-          feeId: fee._id,
-        });
+  try {
+    console.log("STEP1: Sending verify request...");
 
-        alert("Payment successful");
-      },
+    const verifyRes = await apiRequest("/api/payment/verify", "POST", {
+      ...response,
+      feeId: fee._id,
+    });
+
+    console.log("STEP1: Verify API response:", verifyRes);
+
+    alert("Payment successful");
+
+  } catch (err) {
+    console.error("STEP1: VERIFY ERROR:", err);
+  }
+},
     };
 
     const rzp = new window.Razorpay(options);
