@@ -164,7 +164,7 @@ const FeeDashboard = () => {
   const overdue = fees.filter((f) => f.status === "overdue").length;
   const handlePayment = async (fee) => {
   try {
-    console.log("PAYMENT CLICKED", fee);
+    // console.log("PAYMENT CLICKED", fee);
 
     const order = await apiRequest(
       API.PAYMENT.ORDER,
@@ -172,7 +172,7 @@ const FeeDashboard = () => {
       { amount: fee.amount }
     );
 
-    console.log("ORDER:", order);
+    // console.log("ORDER:", order);
 
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY,
@@ -181,10 +181,10 @@ const FeeDashboard = () => {
       name: "Hostel Fees",
       order_id: order.id,
 handler: async function (response) {
-  console.log("STEP1: PAYMENT SUCCESS RESPONSE", response);
+  // console.log("STEP1: PAYMENT SUCCESS RESPONSE", response);
 
   try {
-    console.log("STEP1: Sending verify request...");
+    // console.log("STEP1: Sending verify request...");
 
     await apiRequest(API.PAYMENT.VERIFY, "POST", {
   razorpay_payment_id: response.razorpay_payment_id,
@@ -192,14 +192,15 @@ handler: async function (response) {
   razorpay_signature: response.razorpay_signature,
   feeId: fee._id,
 });
-    console.log("STEP1: Verify done");
+    // console.log("STEP1: Verify done");
 
-    console.log("TOKEN:", localStorage.getItem("token")); // 🔥 ADD THIS
+    // console.log("TOKEN:", localStorage.getItem("token")); // 🔥 ADD THIS
 
     await fetchFees();
-
+  toast.success("Payment successful 🎉")
   } catch (err) {
     console.error("STEP1: VERIFY ERROR:", err);
+    toast.error("Payment failed")
   }
 }
     };
@@ -305,7 +306,7 @@ handler: async function (response) {
             <option value="unpaid">Unpaid</option>
             <option value="overdue">Overdue</option>
           </select>
-
+{role === "admin" ? (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
@@ -331,7 +332,9 @@ handler: async function (response) {
                     <tr key={b._id}>
                       <td style={td}></td>
                       <td style={td}>{b.month}</td>
-                      <td style={td}>₹ {b.amount}</td>
+                      <td style={{ fontWeight: "600", fontSize: "16px" }}>
+  ₹ {b.amount}
+</td>
                       <td style={td}>
                         {new Date(b.dueDate).toLocaleDateString()}
                       </td>
@@ -342,9 +345,31 @@ handler: async function (response) {
                       </td>
 
                      <td>
-  <button onClick={() => handlePayment(b)}>
-    Pay Now
-  </button>
+  <button
+  onClick={() => handlePayment(b)}
+  disabled={b.status === "paid" || loading}
+  style={{
+    padding: "10px 16px",
+    borderRadius: "8px",
+    border: "none",
+    background:
+      b.status === "paid"
+        ? "#16a34a"
+        : loading
+        ? "#9ca3af"
+        : "#2563eb",
+    color: "#fff",
+    cursor:
+      b.status === "paid" ? "not-allowed" : "pointer",
+    fontWeight: 500,
+  }}
+>
+  {b.status === "paid"
+    ? "Paid ✅"
+    : loading
+    ? "Processing..."
+    : "Pay Now"}
+</button>
 </td>
                     </tr>
                   ))}
@@ -352,6 +377,44 @@ handler: async function (response) {
               ))}
             </tbody>
           </table>
+):(
+  <div style={{ display: "grid", gap: "15px", marginTop: "10px" }}>
+    {fees.map((b) => (
+      <div key={b._id} style={cardBox}>
+        
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <h3 style={{ margin: 0, textTransform: "capitalize" }}>
+            {b.month}
+          </h3>
+          <span style={statusStyle(b.status)}>
+            {b.status}
+          </span>
+        </div>
+
+        <p style={{ fontSize: "18px", fontWeight: "600", margin: "8px 0" }}>
+          ₹ {b.amount}
+        </p>
+
+        <p style={{ color: "#6b7280", marginBottom: "10px" }}>
+          Due: {new Date(b.dueDate).toLocaleDateString()}
+        </p>
+
+        <button
+          onClick={() => handlePayment(b)}
+          disabled={b.status === "paid" || loading}
+          style={payBtn(b.status)}
+        >
+          {b.status === "paid"
+            ? "Paid ✅"
+            : loading
+            ? "Processing..."
+            : "Pay Now"}
+        </button>
+
+      </div>
+    ))}
+  </div>
+)}
         </div>
 
         {loading && <p>Processing...</p>}
@@ -361,6 +424,24 @@ handler: async function (response) {
 };
 
 /* ================= STYLES ================= */
+const cardBox = {
+  background: "#fff",
+  padding: "20px",
+  borderRadius: "12px",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+  border: "1px solid #eee",
+};
+
+const payBtn = (status) => ({
+  width: "100%",
+  padding: "10px",
+  borderRadius: "8px",
+  border: "none",
+  fontWeight: "600",
+  background: status === "paid" ? "#16a34a" : "#2563eb",
+  color: "#fff",
+  cursor: status === "paid" ? "not-allowed" : "pointer",
+});
 
 const card = (bg) => ({
   flex: 1,
@@ -412,14 +493,23 @@ const groupHeader = {
 };
 
 const statusStyle = (status) => ({
+  padding: "6px 12px",
+  borderRadius: "999px",
+  fontSize: "12px",
+  fontWeight: "600",
+  textTransform: "capitalize",
   background:
     status === "paid"
       ? "#dcfce7"
       : status === "overdue"
-        ? "#fee2e2"
-        : "#fef3c7",
-  padding: "4px 10px",
-  borderRadius: 20,
+      ? "#fee2e2"
+      : "#fef3c7",
+  color:
+    status === "paid"
+      ? "#166534"
+      : status === "overdue"
+      ? "#991b1b"
+      : "#92400e",
 });
 
 export default FeeDashboard;
