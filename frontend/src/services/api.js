@@ -7,7 +7,15 @@ const handleResponse = async (response) => {
     window.location.href = "/";
     return;
   }
-  return response.json();
+
+  const text = await response.text();  // 🔥 read raw first
+
+  try {
+    return JSON.parse(text); // try parsing
+  } catch (err) {
+    console.error("NON-JSON RESPONSE:", text);
+    throw new Error("Server error (non-JSON response)");
+  }
 };
 
 export const apiGet = async (endpoint) => {
