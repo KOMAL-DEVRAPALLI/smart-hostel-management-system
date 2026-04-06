@@ -92,7 +92,9 @@ const FeeDashboard = () => {
       setLoading(false);
     }
   };
-
+  const actionableFees = fees.filter(
+  (f) => f.status === "unpaid" || f.status === "overdue"
+);
   /* ================= BULK ================= */
 
   const handleBulkGenerate = async () => {
@@ -304,8 +306,14 @@ const FeeDashboard = () => {
       ) : (
         /* ================= STUDENT CARDS ================= */
         <div style={{ display: "grid", gap: "15px", marginTop: "10px" }}>
-          {fees.map((b) => (
-            <div key={b._id} style={cardBox}>
+          <div style={{ display: "grid", gap: "15px", marginTop: "10px" }}>
+  {actionableFees.length === 0 ? (
+    <p style={{ textAlign: "center", color: "#6b7280" }}>
+      No pending payments 🎉
+    </p>
+  ) : (
+    actionableFees.map((b) => (
+      <div key={b._id} style={cardBox}>
 
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <h3 style={{ margin: 0, textTransform: "capitalize" }}>{b.month}</h3>
@@ -325,7 +333,7 @@ const FeeDashboard = () => {
                   setSelectedFee(b);
                   setShowModal(true);
                 }}
-                disabled={b.status === "paid" || loading}
+                disabled={loading}
                 style={payBtn(b.status)}
               >
                 {b.status === "paid"
@@ -336,11 +344,13 @@ const FeeDashboard = () => {
               </button>
 
             </div>
-          ))}
+    ))
+  )}
+</div>
         </div>
       )}
     </div>
-
+ 
     {loading && <p>Processing...</p>}
   </div>
 
