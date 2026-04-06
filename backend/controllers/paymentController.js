@@ -1,6 +1,6 @@
 import razorpay from "../config/razorpay.js";
 import crypto from "crypto";
-
+import Fee from "../models/feeModel.js";
 export const createOrder = async (req, res) => {
   try {
     const { amount } = req.body;
