@@ -1,6 +1,7 @@
 const BASE_URL = "https://backend-qlmf.onrender.com";
 
 const handleResponse = async (response) => {
+  console.log("BASE URL:", BASE_URL);
   if (response.status === 401) {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
