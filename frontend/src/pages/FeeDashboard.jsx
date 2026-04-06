@@ -186,7 +186,7 @@ handler: async function (response) {
   try {
     console.log("STEP1: Sending verify request...");
 
-    await apiRequest("/api/payment/verify", "POST", {
+    await apiRequest(API.PAYMENT.VERIFY, "POST", {
       ...response,
       feeId: fee._id,
     });
