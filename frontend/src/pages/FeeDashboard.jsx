@@ -187,10 +187,11 @@ handler: async function (response) {
     console.log("STEP1: Sending verify request...");
 
     await apiRequest(API.PAYMENT.VERIFY, "POST", {
-      ...response,
-      feeId: fee._id,
-    });
-
+  razorpay_payment_id: response.razorpay_payment_id,
+  razorpay_order_id: response.razorpay_order_id,
+  razorpay_signature: response.razorpay_signature,
+  feeId: fee._id,
+});
     console.log("STEP1: Verify done");
 
     console.log("TOKEN:", localStorage.getItem("token")); // 🔥 ADD THIS
