@@ -51,8 +51,11 @@ const FeeDashboard = () => {
   };
 
   useEffect(() => {
-    fetchStudents();
+   
     fetchFees();
+    if(role==="admin"){
+       fetchStudents();
+    }
   }, []);
 
   /* ================= ADD SINGLE ================= */
