@@ -13,10 +13,6 @@ const StudentDashboard = () => {
   const [fees, setFees] = useState([]);
   const [pendingFees, setPendingFees] = useState(0);
   const [openComplaints, setOpenComplaints] = useState(0);
-
-  const [selectedFee, setSelectedFee] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [paying, setPaying] = useState(false);
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
@@ -25,6 +21,40 @@ const StudentDashboard = () => {
   const actionableFees = fees.filter(
   (f) => f.status === "unpaid" || f.status === "overdue"
 );
+const handlePayment = async (fee) => {
+  try {
+    const order = await apiRequest(
+      API.FEES.PAYMENT,
+      "POST",
+      { amount: fee.amount }
+    );
+
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY,
+      amount: order.amount,
+      currency: "INR",
+      name: "Hostel Fees",
+      order_id: order.id,
+
+      handler: async function (response) {
+        await apiRequest(API.FEES.VERIFY, "POST", {
+          ...response,
+          feeId: fee._id,
+        });
+
+        toast.success("Payment successful 🎉");
+        loadData();
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Payment failed ❌");
+  }
+};
   const loadData = async () => {
     try {
       setLoading(true);
@@ -63,48 +93,7 @@ const StudentDashboard = () => {
     }
   };
 
-  /* ===== PAYMENT ===== */
-
-  const handlePayment = async () => {
-
-    if (!paymentMethod) {
-      toast.error("Select payment method");
-      return;
-    }
-
-    try {
-      setPaying(true);
-
-      const transactionId = `TXN-${Math.random()
-        .toString(36)
-        .substring(2, 10)
-        .toUpperCase()}`;
-
-      await apiRequest(API.FEES.ALL + `/${selectedFee._id}`, "PATCH", {
-        status: "paid",
-        transactionId
-      });
-
-      setFees(prev =>
-        prev.map(f =>
-          f._id === selectedFee._id
-            ? { ...f, status: "paid", transactionId }
-            : f
-        )
-      );
-
-      toast.success("Payment Successful");
-
-      setSelectedFee(null);
-      setPaymentMethod("");
-
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setPaying(false);
-    }
-  };
-
+  
   return (
     <MainLayout>
 
@@ -155,7 +144,7 @@ const StudentDashboard = () => {
                   {(fee.status === "unpaid" || fee.status === "overdue") && (
                     <button
                       style={payButton}
-                      onClick={() => setSelectedFee(fee)}
+                      onClick={() => handlePayment(fee)}
                     >
                       Pay Now
                     </button>
@@ -167,47 +156,6 @@ const StudentDashboard = () => {
 
           </div>
         </>
-      )}
-
-      {/* ===== MODAL ===== */}
-      {selectedFee && (
-        <div style={modalOverlay} onClick={() => setSelectedFee(null)}>
-          <div style={modalBox} onClick={(e) => e.stopPropagation()}>
-
-            <h3>Complete Payment</h3>
-
-            <p>Amount: ₹ {selectedFee.amount}</p>
-
-            <select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              style={inputStyle}
-            >
-              <option value="">Select Method</option>
-              <option value="upi">UPI</option>
-              <option value="card">Card</option>
-              <option value="netbanking">Net Banking</option>
-            </select>
-
-            <br /><br />
-
-            <button
-              style={{ ...payButton, opacity: paying ? 0.7 : 1 }}
-              onClick={handlePayment}
-              disabled={paying}
-            >
-              {paying ? "Processing Payment..." : "Confirm Payment"}
-            </button>
-
-            <button
-              style={cancelButton}
-              onClick={() => setSelectedFee(null)}
-            >
-              Cancel
-            </button>
-
-          </div>
-        </div>
       )}
 
     </MainLayout>
