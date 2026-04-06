@@ -231,23 +231,26 @@ export const getFees = async (req, res) => {
 
     let fees;
 
-    if (req.user.role === "student") {
-const student = await Student.findOne({ userId: req.user.id });
+ if (req.user.role === "student") {
+  const student = await Student.findOne({ userId: req.user.id });
 
-console.log("STUDENT FOUND:", student);
-      if (!student) {
-        return res.status(404).json({
-          message: "Student not found"
-        });
-      }
+  console.log("STUDENT FOUND:", student);
 
-      fees = await Fee.find({
-        studentId: student._id
-      }).populate("studentId");
+  if (!student) {
+    return res.status(404).json({
+      message: "Student not found"
+    });
+  }
 
-    } else {
-      fees = await Fee.find().populate("studentId");
-    }
+  fees = await Fee.find({
+    studentId: student._id
+  }).populate("studentId");
+console.log("QUERY student._id:", student._id);
+console.log("FEES FOUND:", await Fee.find({ studentId: student._id })); 
+} else {
+  fees = await Fee.find().populate("studentId");
+}
+
 
     res.status(200).json(fees);
 
