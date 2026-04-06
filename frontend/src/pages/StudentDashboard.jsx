@@ -8,8 +8,11 @@ import toast from "react-hot-toast";
 const StudentDashboard = () => {
 
   const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
-const [selectedFee, setSelectedFee] = useState(null);
+  const [selectedFee, setSelectedFee] = useState(null);
+
   const [roomNumber, setRoomNumber] = useState("Not Assigned");
   const [fees, setFees] = useState([]);
   const [pendingFees, setPendingFees] = useState(0);
@@ -19,51 +22,63 @@ const [selectedFee, setSelectedFee] = useState(null);
   useEffect(() => {
     loadData();
   }, []);
+
+  // ✅ Filter only actionable fees
   const actionableFees = fees.filter(
-  (f) => f.status === "unpaid" || f.status === "overdue"
-);
-const handlePayment = async (fee) => {
-  try {
-    const order = await apiRequest(
-          API.PAYMENT.ORDER,
-      "POST",
-      { amount: fee.amount }
-    );
+    (f) => f.status === "unpaid" || f.status === "overdue"
+  );
 
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY,
-      amount: order.amount,
-      currency: "INR",
-      name: "Hostel Fees",
-      order_id: order.id,
+  // 🔥 Razorpay Payment
+  const handlePayment = async (fee) => {
+    if (paying) return;
 
-      handler: async function (response) {
-        await apiRequest(API.PAYMENT.VERIFY, "POST", {
-          ...response,
-          feeId: fee._id,
-        });
+    try {
+      setPaying(true);
 
-        toast.success("Payment successful 🎉");
-        loadData();
-      },
-    };
+      const order = await apiRequest(
+        API.PAYMENT.ORDER,
+        "POST",
+        { amount: fee.amount }
+      );
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY,
+        amount: order.amount,
+        currency: "INR",
+        name: "Hostel Fees",
+        order_id: order.id,
 
-  } catch (err) {
-    console.error(err);
-    toast.error("Payment failed ❌");
-  }
-};
+        handler: async function (response) {
+          await apiRequest(API.PAYMENT.VERIFY, "POST", {
+            ...response,
+            feeId: fee._id,
+          });
+
+          toast.success("Payment successful 🎉");
+          loadData();
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Payment failed ❌");
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  // 🔄 Load data
   const loadData = async () => {
     try {
       setLoading(true);
 
       const [student, feeData, complaints] = await Promise.all([
-        apiGet(API.STUDENTS.ME), // keep this if not in API file
+        apiGet(API.STUDENTS.ME),
         apiGet(API.FEES.ALL),
-        apiGet(API.COMPLAINTS.ALL)
+        apiGet(API.COMPLAINTS.ALL),
       ]);
 
       setFees(
@@ -72,29 +87,27 @@ const handlePayment = async (fee) => {
 
       if (student) {
         setUserName(student.name);
-
         if (student?.roomId?.roomNumber) {
           setRoomNumber(student.roomId.roomNumber);
         }
       }
 
       const pending = feeData.filter(
-        f => f.status === "unpaid" || f.status === "overdue"
+        (f) => f.status === "unpaid" || f.status === "overdue"
       );
       setPendingFees(pending.length);
 
-      const open = complaints.filter(c => c.status === "open");
+      const open = complaints.filter((c) => c.status === "open");
       setOpenComplaints(open.length);
 
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Failed to load dashboard");
+      toast.error("Failed to load dashboard");
     } finally {
       setLoading(false);
     }
   };
 
-  
   return (
     <MainLayout>
 
@@ -106,94 +119,95 @@ const handlePayment = async (fee) => {
         <>
           {/* ===== CARDS ===== */}
           <div style={cardContainer}>
-
             <Card title="Room" value={roomNumber} color="#3b82f6" icon={<FaBed />} />
             <Card title="Pending Fees" value={pendingFees} color="#f59e0b" icon={<FaMoneyBillWave />} />
             <Card title="Open Complaints" value={openComplaints} color="#ef4444" icon={<FaExclamationCircle />} />
-
           </div>
 
           {/* ===== FEES ===== */}
           <div style={feeContainer}>
-
             <h3>My Fees</h3>
 
-           {actionableFees.length === 0 ? (
-  <div style={emptyState}>
-    <h4>No Pending Fees 🎉</h4>
-    <p>You are all clear!</p>
-  </div>
+            {actionableFees.length === 0 ? (
+              <div style={emptyState}>
+                <h4>No Pending Fees 🎉</h4>
+                <p>You are all clear!</p>
+              </div>
             ) : (
-              actionableFees.map(fee => (
-                <div key={fee._id} style={feeCard}>
-
+              actionableFees.map((fee) => (
+                <div
+                  key={fee._id}
+                  style={{
+                    ...feeCard,
+                    borderLeft:
+                      fee.status === "overdue"
+                        ? "4px solid #ef4444"
+                        : "4px solid transparent",
+                  }}
+                >
                   <div>
                     <strong>{fee.month.toUpperCase()}</strong> — ₹{fee.amount}
                     <br />
-
                     <span style={getStatusStyle(fee.status)}>
                       {fee.status}
                     </span>
-
-                    {fee.transactionId && (
-                      <div style={{ fontSize: "12px", color: "gray" }}>
-                        TXN: {fee.transactionId}
-                      </div>
-                    )}
                   </div>
 
-                  {(fee.status === "unpaid" || fee.status === "overdue") && (
-                    <button
-                      style={payButton}
-                     onClick={() => {
-  setSelectedFee(fee);
-  setShowModal(true);
-}}
-                    >
-                      Pay Now
-                    </button>
-                  )}
-
+                  <button
+                    style={payButton}
+                    onClick={() => {
+                      setSelectedFee(fee);
+                      setShowModal(true);
+                    }}
+                  >
+                    Pay Now
+                  </button>
                 </div>
               ))
             )}
-
           </div>
         </>
       )}
-  {showModal && selectedFee && (
-  <div style={modalOverlay}>
-    <div style={modalBox}>
 
-      <h3>Confirm Payment</h3>
+      {/* ===== MODAL ===== */}
+      {showModal && selectedFee && (
+        <div style={modalOverlay}>
+          <div style={modalBox}>
+            <h3>Confirm Payment</h3>
 
-      <p><strong>Month:</strong> {selectedFee.month}</p>
-      <p><strong>Amount:</strong> ₹ {selectedFee.amount}</p>
-      <p><strong>Due:</strong> {new Date(selectedFee.dueDate).toLocaleDateString()}</p>
+            <p><strong>Month:</strong> {selectedFee.month}</p>
+            <p><strong>Amount:</strong> ₹ {selectedFee.amount}</p>
+            <p><strong>Due:</strong> {new Date(selectedFee.dueDate).toLocaleDateString()}</p>
 
-      <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-        
-        <button
-          style={cancelBtn}
-          onClick={() => setShowModal(false)}
-        >
-          Cancel
-        </button>
+            <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+              
+              <button
+                style={cancelBtn}
+                onClick={() => {
+                  setShowModal(false);
+                  setSelectedFee(null);
+                }}
+              >
+                Cancel
+              </button>
 
-        <button
-          style={confirmBtn}
-          onClick={() => {
-            handlePayment(selectedFee);
-            setShowModal(false);
-          }}
-        >
-          Confirm & Pay
-        </button>
+              <button
+                style={confirmBtn}
+                disabled={paying}
+                onClick={() => {
+                  handlePayment(selectedFee);
+                  setShowModal(false);
+                  setSelectedFee(null);
+                }}
+              >
+                {paying ? "Processing..." : "Confirm & Pay"}
+              </button>
 
-      </div>
-    </div>
-  </div>
-)}
+            </div>
+          </div>
+        </div>
+      )}
+
     </MainLayout>
   );
 };
@@ -208,50 +222,32 @@ const Card = ({ title, value, color, icon }) => (
   </div>
 );
 
-/* ===== STATUS STYLE ===== */
-
-const getStatusStyle = (status) => ({
-  padding: "4px 10px",
-  borderRadius: "20px",
-  fontSize: "12px",
-  marginTop: "5px",
-  display: "inline-block",
-  background:
-    status === "paid" ? "#dcfce7" :
-    status === "overdue" ? "#fee2e2" :
-    "#fef3c7",
-  color:
-    status === "paid" ? "#166534" :
-    status === "overdue" ? "#991b1b" :
-    "#92400e"
-});
-
 /* ===== STYLES ===== */
 
 const cardContainer = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
   gap: "20px",
-  marginTop: "20px"
+  marginTop: "20px",
 };
 
 const cardStyle = {
   padding: "25px",
   borderRadius: "12px",
   color: "white",
-  textAlign: "center"
+  textAlign: "center",
 };
 
 const numberStyle = {
   fontSize: "28px",
-  fontWeight: "bold"
+  fontWeight: "bold",
 };
 
 const feeContainer = {
   marginTop: "30px",
   background: "#fff",
   padding: "20px",
-  borderRadius: "10px"
+  borderRadius: "10px",
 };
 
 const feeCard = {
@@ -259,7 +255,7 @@ const feeCard = {
   justifyContent: "space-between",
   padding: "12px",
   borderBottom: "1px solid #eee",
-  alignItems: "center"
+  alignItems: "center",
 };
 
 const payButton = {
@@ -268,16 +264,7 @@ const payButton = {
   padding: "6px 12px",
   border: "none",
   borderRadius: "6px",
-  cursor: "pointer"
-};
-
-const cancelButton = {
-  background: "#ef4444",
-  color: "white",
-  padding: "6px 12px",
-  border: "none",
-  borderRadius: "6px",
-  marginLeft: "10px"
+  cursor: "pointer",
 };
 
 const modalOverlay = {
@@ -290,7 +277,7 @@ const modalOverlay = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  zIndex: 1000
+  zIndex: 1000,
 };
 
 const modalBox = {
@@ -316,17 +303,22 @@ const confirmBtn = {
   color: "#fff",
 };
 
-const inputStyle = {
-  padding: "10px",
-  width: "100%",
-  borderRadius: "6px",
-  border: "1px solid #ccc"
-};
-
 const emptyState = {
   textAlign: "center",
   padding: "20px",
-  color: "#6b7280"
+  color: "#6b7280",
 };
+
+const getStatusStyle = (status) => ({
+  padding: "4px 10px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  background:
+    status === "paid"
+      ? "#dcfce7"
+      : status === "overdue"
+      ? "#fee2e2"
+      : "#fef3c7",
+});
 
 export default StudentDashboard;
