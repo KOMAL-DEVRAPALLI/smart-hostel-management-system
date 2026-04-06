@@ -217,14 +217,14 @@ export const getFees = async (req, res) => {
 
     // ✅ AUTO UPDATE OVERDUE
     await Fee.updateMany(
-      {
-        status: "unpaid",
-        dueDate: { $lt: today }
-      },
-      {
-        $set: { status: "overdue" }
-      }
-    );
+  {
+    status: "unpaid",
+    dueDate: { $lt: today }
+  },
+  {
+    $set: { status: "overdue" }
+  }
+);
 
     let fees;
 
@@ -315,5 +315,39 @@ export const updateFeeStatus = async (req, res) => {
     res.status(500).json({
       message: error.message
     });
+  }
+};
+
+
+export const verifyPayment = async (req, res) => {
+  try {
+    console.log("VERIFY BODY:", req.body);
+
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      feeId,
+    } = req.body;
+
+    // 🔥 CRITICAL LINE (this is probably missing or wrong)
+   const updated = await Fee.findByIdAndUpdate(
+  feeId,
+  {
+    $set: {
+      status: "paid",
+      paymentId: razorpay_payment_id,
+    }
+  },
+  { new: true }
+);
+
+    console.log("UPDATED FEE:", updated);
+
+    res.json({ success: true, updated });
+
+  } catch (error) {
+    console.error("VERIFY ERROR:", error);
+    res.status(500).json({ message: "Verification failed" });
   }
 };

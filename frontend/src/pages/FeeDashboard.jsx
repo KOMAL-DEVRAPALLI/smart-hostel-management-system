@@ -192,7 +192,8 @@ handler: async function (response) {
 
     console.log("STEP1: Verify API response:", verifyRes);
 
-    alert("Payment successful");
+    toast.success("Payment successful")
+    fetchFees()
 
   } catch (err) {
     console.error("STEP1: VERIFY ERROR:", err);
