@@ -18,12 +18,14 @@ export const API = {
     ALL: "/api/fees",
     BULK_GENERATE: "/api/fees/bulk-generate",
     PAYMENT: "/api/payment/order",
-    VERIFY:"/api/payment/verify",
-    RAZORPAY:"/api/payment/verify"
   },
 
   COMPLAINTS: {
     ALL: "/api/complaints",
     BY_ID: (id) => `/api/complaints/${id}`,
   },
+  PAYMENT: {
+  ORDER: "/api/payment/order",
+  VERIFY: "/api/payment/verify"
+},
 };

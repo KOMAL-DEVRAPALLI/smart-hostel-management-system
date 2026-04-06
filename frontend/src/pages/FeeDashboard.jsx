@@ -166,7 +166,7 @@ const FeeDashboard = () => {
     console.log("PAYMENT CLICKED", fee);
 
     const order = await apiRequest(
-      "/api/payment/order",
+      API.PAYMENT.ORDER,
       "POST",
       { amount: fee.amount }
     );
@@ -185,7 +185,7 @@ handler: async function (response) {
   try {
     console.log("STEP1: Sending verify request...");
 
-    const verifyRes = await apiRequest(API.FEES.RAZORPAY, "POST", {
+    const verifyRes = await apiRequest(API.PAYMENT.VERIFY, "POST", {
       ...response,
       feeId: fee._id,
     });
