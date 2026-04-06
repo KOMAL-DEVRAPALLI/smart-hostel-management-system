@@ -8,7 +8,8 @@ import toast from "react-hot-toast";
 const StudentDashboard = () => {
 
   const [loading, setLoading] = useState(true);
-
+  const [showModal, setShowModal] = useState(false);
+const [selectedFee, setSelectedFee] = useState(null);
   const [roomNumber, setRoomNumber] = useState("Not Assigned");
   const [fees, setFees] = useState([]);
   const [pendingFees, setPendingFees] = useState(0);
@@ -144,7 +145,10 @@ const handlePayment = async (fee) => {
                   {(fee.status === "unpaid" || fee.status === "overdue") && (
                     <button
                       style={payButton}
-                      onClick={() => handlePayment(fee)}
+                     onClick={() => {
+  setSelectedFee(fee);
+  setShowModal(true);
+}}
                     >
                       Pay Now
                     </button>
@@ -157,7 +161,39 @@ const handlePayment = async (fee) => {
           </div>
         </>
       )}
+  {showModal && selectedFee && (
+  <div style={modalOverlay}>
+    <div style={modalBox}>
 
+      <h3>Confirm Payment</h3>
+
+      <p><strong>Month:</strong> {selectedFee.month}</p>
+      <p><strong>Amount:</strong> ₹ {selectedFee.amount}</p>
+      <p><strong>Due:</strong> {new Date(selectedFee.dueDate).toLocaleDateString()}</p>
+
+      <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+        
+        <button
+          style={cancelBtn}
+          onClick={() => setShowModal(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          style={confirmBtn}
+          onClick={() => {
+            handlePayment(selectedFee);
+            setShowModal(false);
+          }}
+        >
+          Confirm & Pay
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
     </MainLayout>
   );
 };
@@ -252,16 +288,32 @@ const modalOverlay = {
   height: "100%",
   background: "rgba(0,0,0,0.5)",
   display: "flex",
+  alignItems: "center",
   justifyContent: "center",
-  alignItems: "center"
+  zIndex: 1000
 };
 
 const modalBox = {
   background: "#fff",
   padding: "25px",
-  borderRadius: "10px",
-  width: "300px",
-  textAlign: "center"
+  borderRadius: "12px",
+  width: "320px",
+};
+
+const cancelBtn = {
+  flex: 1,
+  padding: "10px",
+  borderRadius: "8px",
+  border: "1px solid #ccc",
+};
+
+const confirmBtn = {
+  flex: 1,
+  padding: "10px",
+  borderRadius: "8px",
+  border: "none",
+  background: "#2563eb",
+  color: "#fff",
 };
 
 const inputStyle = {
