@@ -13,6 +13,9 @@ const handleResponse = async (response) => {
 export const apiGet = async (endpoint) => {
   const token = localStorage.getItem("token");
 
+  console.log("API GET CALL:", endpoint);
+  console.log("TOKEN USED:", token);  // 🔥 IMPORTANT
+
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     headers: {
       Authorization: `Bearer ${token}`,
