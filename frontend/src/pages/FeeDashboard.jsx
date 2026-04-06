@@ -185,20 +185,21 @@ handler: async function (response) {
   try {
     console.log("STEP1: Sending verify request...");
 
-    const verifyRes = await apiRequest(API.PAYMENT.VERIFY, "POST", {
+    await apiRequest("/api/payment/verify", "POST", {
       ...response,
       feeId: fee._id,
     });
 
-    console.log("STEP1: Verify API response:", verifyRes);
+    console.log("STEP1: Verify done");
 
-    toast.success("Payment successful")
-    fetchFees()
+    console.log("TOKEN:", localStorage.getItem("token")); // 🔥 ADD THIS
+
+    await fetchFees();
 
   } catch (err) {
     console.error("STEP1: VERIFY ERROR:", err);
   }
-},
+}
     };
 
     const rzp = new window.Razorpay(options);
