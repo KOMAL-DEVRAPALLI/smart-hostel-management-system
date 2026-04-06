@@ -216,15 +216,19 @@ export const getFees = async (req, res) => {
     const today = new Date();
 
     // ✅ AUTO UPDATE OVERDUE
-    await Fee.updateMany(
-  {
-    status: "unpaid",
-    dueDate: { $lt: today }
-  },
-  {
-    $set: { status: "overdue" }
-  }
-);
+   try {
+  await Fee.updateMany(
+    {
+      status: "unpaid",
+      dueDate: { $lt: new Date() }
+    },
+    {
+      $set: { status: "overdue" }
+    }
+  );
+} catch (err) {
+  console.error("UPDATE OVERDUE ERROR:", err);
+}
 
     let fees;
 
