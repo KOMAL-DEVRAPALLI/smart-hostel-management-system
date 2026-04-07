@@ -4,7 +4,9 @@ import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
 import { API } from "../services/apiRoutes";
 import {io} from "socket.io-client"
- const socket = io(import.meta.env.VITE_API_URL)
+ const socket = io("https://backend-qlmf.onrender.com", {
+  transports: ["websocket"]
+});
 const FeeDashboard = () => {
  
   const [filter, setFilter] = useState("all");
