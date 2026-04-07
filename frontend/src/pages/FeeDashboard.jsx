@@ -4,10 +4,13 @@ import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
 import { API } from "../services/apiRoutes";
 import { io } from "socket.io-client";
-console.log("🔥 FeeDashboard mounted");
-console.log("ROLE:", role);
-const FeeDashboard = () => {
 
+const FeeDashboard = () => {
+  
+  const role = localStorage.getItem("role"); // ✅ ADD THIS
+
+  console.log("🔥 FeeDashboard mounted");
+  console.log("ROLE:", role);
   const socketRef = useRef(null);
 
   const [filter, setFilter] = useState("all");
