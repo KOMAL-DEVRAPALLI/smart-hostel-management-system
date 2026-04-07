@@ -214,7 +214,7 @@ console.log("ROLE:", role);
         {/* STUDENT VIEW */}
         {role !== "admin" && (
           <div style={{ display: "grid", gap: "15px" }}>
-            {unpaid.map((b) => (
+            {fees.map((b) => (
               <div key={b._id} style={cardBox}>
                 <h3>{b.month}</h3>
                 <p>₹ {b.amount}</p>
