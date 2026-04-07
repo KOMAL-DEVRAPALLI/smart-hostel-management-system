@@ -4,6 +4,8 @@ import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
 import { API } from "../services/apiRoutes";
 import {io} from "socket.io-client"
+console.log("🔥 SOCKET CODE LOADED");
+
  const socket = io("https://backend-qlmf.onrender.com", {
   transports: ["websocket"]
 });
