@@ -121,23 +121,14 @@ const FeeDashboard = () => {
   // ================= UI =================
   return (
     <MainLayout>
-      
-      <div style={wrapper}>
-
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <h2>Billing & Payments</h2>
-     {/* ===== STATS ===== */}
-        <div style={stats}>
-          <div style={{ ...card, background: "#16a34a" }}>Total: {total}</div>
-          <div style={{ ...card, background: "#22c55e" }}>Paid: {paid}</div>
-          <div style={{ ...card, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
-          <div style={{ ...card, background: "#ef4444" }}>Overdue: {overdue}</div>
-        </div>
 
         {/* ================= ADMIN VIEW ================= */}
         {role === "admin" && (
-          <div style={forms}>
+          <div>
             <h3>All Fees</h3>
-          
+
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
@@ -152,7 +143,7 @@ const FeeDashboard = () => {
               <p>No fees found</p>
             ) : (
               filteredFees.map((fee) => (
-                <div key={fee._id} style={{ padding: "10px", border: "1px solid #ccc" }}>
+                <div key={fee._id} style={cardBox}>
                   <h4>{fee.studentId?.name}</h4>
                   <p>{fee.month}</p>
                   <p>₹ {fee.amount}</p>
@@ -189,67 +180,5 @@ const FeeDashboard = () => {
     </MainLayout>
   );
 };
-const wrapper = { maxWidth: "1200px", margin: "0 auto" };
-
-const stats = { display: "flex", gap: 10, marginBottom: 20 };
-
-const card = {
-  flex: 1,
-  padding: 15,
-  borderRadius: 10,
-  color: "#fff",
-  textAlign: "center"
-};
-
-const forms = { display: "flex", gap: 20, flexWrap: "wrap" };
-
-const box = {
-  flex: 1,
-  minWidth: 300,
-  padding: 20,
-  background: "#fff",
-  borderRadius: 10,
-  marginTop: 20
-};
-
-const input = {
-  padding: 10,
-  marginBottom: 10,
-  width: "100%"
-};
-
-const btn = {
-  background: "#16a34a",
-  color: "#fff",
-  padding: "10px",
-  border: "none",
-  borderRadius: 6
-};
-
-const btnSmall = {
-  background: "#22c55e",
-  color: "#fff",
-  padding: "6px 10px",
-  border: "none",
-  borderRadius: 6
-};
-
-const table = { width: "100%", borderCollapse: "collapse" };
-
-const th = { textAlign: "left", padding: 10 };
-
-const td = { padding: 10 };
-
-const statusStyle = (status) => ({
-  background:
-    status === "paid"
-      ? "#dcfce7"
-      : status === "overdue"
-      ? "#fee2e2"
-      : "#fef3c7",
-  padding: "4px 10px",
-  borderRadius: 20
-});
-
 
 export default FeeDashboard;
