@@ -118,12 +118,7 @@ const FeeDashboard = () => {
   setLoadingId(null); // 🔥 important
 }
   };
- /* ===== STATS ===== */
-   const total = fees.length;
-const paid = fees.filter(b => b.status?.toLowerCase() === "paid").length;
-const unpaid = fees.filter(b => b.status?.toLowerCase() === "unpaid").length;
-const overdue = fees.filter(b => b.status?.toLowerCase() === "overdue").length;
-  // ================= FILTER =================
+    // ================= FILTER =================
 const filteredFees =
   filter === "all"
     ? fees
@@ -132,6 +127,49 @@ const filteredFees =
     (f) => ["unpaid", "overdue"].includes(f.status?.toLowerCase())
   );
 
+ const groupedFees = filteredFees.reduce((acc, fee) => {
+  const studentId = fee.studentId?._id || "unknown";
+  const studentName = fee.studentId?.name || "Unknown";
+
+  if (!acc[studentId]) {
+    acc[studentId] = {
+      name: studentName,
+      fees: []
+    };
+  }
+
+  acc[studentId].fees.push(fee);
+
+  return acc;
+}, {});
+ /* ===== STATS ===== */
+   const total = fees.length;
+const paid = fees.filter(b => b.status?.toLowerCase() === "paid").length;
+const unpaid = fees.filter(b => b.status?.toLowerCase() === "unpaid").length;
+const overdue = fees.filter(b => b.status?.toLowerCase() === "overdue").length;
+
+const handleStatusToggle = async (fee) => {
+  try {
+    setLoadingId(fee._id);
+
+    const newStatus =
+      fee.status?.toLowerCase() === "paid" ? "unpaid" : "paid";
+
+    await apiRequest(API.FEES.UPDATE_STATUS, "PATCH", {
+      feeId: fee._id,
+      status: newStatus,
+    });
+
+    toast.success(`Marked as ${newStatus}`);
+
+    await fetchFees(); // refresh UI
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to update status");
+  } finally {
+    setLoadingId(null);
+  }
+};
   // ================= UI =================
   return (
    <MainLayout>
@@ -163,25 +201,27 @@ const filteredFees =
           <option value="overdue">Overdue</option>
         </select>
 
-        {filteredFees.length === 0 ? (
-          <p>No fees found</p>
-        ) : (
-          filteredFees.map((fee) => (
-            <div key={fee._id} style={cardItem}>
-             <h4>{fee.studentId?.name || "Unknown Student"}</h4>
+    {Object.values(groupedFees).map((student) => (
+  <div key={student.name} style={box}>
+    <h3>{student.name}</h3>
 
-              <p><strong>Month:</strong> {fee.month}</p>
-              <p><strong>Amount:</strong> ₹ {fee.amount}</p>
+    {student.fees.map((fee) => (
+      <div key={fee._id} style={cardItem}>
+        <p><strong>Month:</strong> {fee.month}</p>
+        <p><strong>Amount:</strong> ₹ {fee.amount}</p>
 
-              <p>
-                <strong>Status:</strong>{" "}
-                <span style={statusStyle(fee.status)}>
-                  {fee.status}
-                </span>
-              </p>
-            </div>
-          ))
-        )}
+        <p>
+          <strong>Status:</strong>{" "}
+          <span style={statusStyle(fee.status)}>
+            {fee.status}
+          </span>
+        </p>
+      </div>
+    ))}
+  </div>
+
+))}
+
       </div>
     )}
 
@@ -206,6 +246,17 @@ const filteredFees =
               >
                 {loadingId === fee._id ? "Processing..." : "Pay Now"}
               </button>
+              <button
+  style={btn}
+  disabled={loadingId === fee._id}
+  onClick={() => handleStatusToggle(fee)}
+>
+  {loadingId === fee._id
+    ? "Updating..."
+    : fee.status?.toLowerCase() === "paid"
+    ? "Mark as Unpaid"
+    : "Mark as Paid"}
+</button>
             </div>
           ))
         )}
