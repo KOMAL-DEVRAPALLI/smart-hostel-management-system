@@ -3,8 +3,10 @@ import { apiGet, apiRequest } from "../services/api";
 import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
 import { API } from "../services/apiRoutes";
-
+import {io} from "socket.io-client"
+ const socket = io(import.meta.env.VITE_API_URL)
 const FeeDashboard = () => {
+ 
   const [filter, setFilter] = useState("all");
   const [students, setStudents] = useState([]);
   const [fees, setFees] = useState([]);
@@ -56,7 +58,20 @@ const FeeDashboard = () => {
       fetchStudents();
     } fetchFees();
   }, []);
+useEffect(() => {
+  socket.on("paymentSuccess", (data) => {
+    toast.success(data.message);
+  });
 
+  return () => {
+    socket.off("paymentSuccess");
+  };
+}, []);
+useEffect(() => {
+  socket.on("connect", () => {
+    console.log("Connected:", socket.id);
+  });
+}, []);
   /* ================= ADD SINGLE ================= */
 
   const handleAddFee = async () => {
@@ -198,7 +213,7 @@ const FeeDashboard = () => {
             // console.log("TOKEN:", localStorage.getItem("token")); // 🔥 ADD THIS
 
             await fetchFees();
-            toast.success("Payment successful 🎉")
+            // toast.success("Payment successful 🎉")
           } catch (err) {
             console.error("STEP1: VERIFY ERROR:", err);
             toast.error("Payment failed")

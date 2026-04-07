@@ -4,7 +4,7 @@ import Fee from "../models/feeModel.js";
 export const createOrder = async (req, res) => {
   try {
     const { amount } = req.body;
-console.log("BODY:", req.body);
+// console.log("BODY:", req.body);
     const order = await razorpay.orders.create({
       amount: amount * 100,
       currency: "INR",
@@ -13,7 +13,7 @@ console.log("BODY:", req.body);
 
     res.json(order);
   } catch (err) {
-  console.log("RAZORPAY ERROR:", err);   // 👈 ADD THIS
+  // console.log("RAZORPAY ERROR:", err);   // 👈 ADD THIS
   res.status(500).json({ message: "Order failed", error: err.message });
 }
 };
@@ -25,19 +25,21 @@ export const verifyPayment = async (req, res) => {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      feeId,   // 🔥 IMPORTANT
+      feeId,
     } = req.body;
 
+    // 🔐 Step 1: Generate signature
     const generated_signature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(razorpay_order_id + "|" + razorpay_payment_id)
       .digest("hex");
 
+    // ❌ Step 2: If invalid → reject
     if (generated_signature !== razorpay_signature) {
       return res.status(400).json({ success: false });
     }
 
-    // 🔥 UPDATE DATABASE
+    // ✅ Step 3: Update DB
     const updated = await Fee.findByIdAndUpdate(
       feeId,
       {
@@ -55,7 +57,13 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    console.log("✅ UPDATED FEE:", updated);
+    // 🔥 Step 4: Emit AFTER success
+    const io = req.app.get("io");
+
+    io.emit("paymentSuccess", {
+      message: "Payment successful",
+      feeId: feeId,
+    });
 
     res.json({ success: true, updated });
 
