@@ -143,7 +143,7 @@ const FeeDashboard = () => {
               <p>No fees found</p>
             ) : (
               filteredFees.map((fee) => (
-                <div key={fee._id} style={cardBox}>
+                <div key={fee._id} style={{ padding: "10px", border: "1px solid #ccc" }}>
                   <h4>{fee.studentId?.name}</h4>
                   <p>{fee.month}</p>
                   <p>₹ {fee.amount}</p>
@@ -161,7 +161,7 @@ const FeeDashboard = () => {
               <p>No pending fees 🎉</p>
             ) : (
               unpaidFees.map((fee) => (
-                <div key={fee._id} style={cardBox}>
+                <div key={fee._id} style={{ padding: "10px", border: "1px solid #ccc" }}>
                   <h3>{fee.month}</h3>
                   <p>₹ {fee.amount}</p>
 
