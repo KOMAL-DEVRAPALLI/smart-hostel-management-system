@@ -109,10 +109,10 @@ const FeeDashboard = () => {
   };
  /* ===== STATS ===== */
 
-  const total = bills.length;
-  const paid = bills.filter(b => b.status === "paid").length;
-  const unpaid = bills.filter(b => b.status === "unpaid").length;
-  const overdue = bills.filter(b => b.status === "overdue").length;
+  const total = fees.length;
+  const paid = fees.filter(b => b.status === "paid").length;
+  const unpaid = fees.filter(b => b.status === "unpaid").length;
+  const overdue = fees.filter(b => b.status === "overdue").length;
   // ================= FILTER =================
   const filteredFees =
     filter === "all"
