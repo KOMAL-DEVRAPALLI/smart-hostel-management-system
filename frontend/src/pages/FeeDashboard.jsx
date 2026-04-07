@@ -6,8 +6,7 @@ import { API } from "../services/apiRoutes";
 import { io } from "socket.io-client";
 
 const FeeDashboard = () => {
-  
-  const role = localStorage.getItem("role"); // ✅ ADD THIS
+
 
   console.log("🔥 FeeDashboard mounted");
   console.log("ROLE:", role);
