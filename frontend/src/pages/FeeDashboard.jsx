@@ -34,7 +34,12 @@ const FeeDashboard = () => {
       fetchFees();
     });
 
-    return () => socketRef.current.disconnect();
+   return () => {
+ if (socketRef.current) {
+  socketRef.current.off("paymentSuccess");
+  socketRef.current.disconnect();
+}
+};
   }, []);
 
   // ================= FETCH =================
@@ -42,7 +47,11 @@ const FeeDashboard = () => {
     try {
       const data = await apiGet(API.FEES.ALL);
       console.log("📦 FEES DATA:", data);
+        if (!Array.isArray(data)) {
+  throw new Error("Invalid data");
+}
       setFees(data);
+    
     } catch {
       toast.error("Failed to fetch fees");
     }
@@ -65,7 +74,7 @@ const FeeDashboard = () => {
     if (role === "admin") {
       fetchStudents();
     }
-  }, []);
+  }, [role]);
 
   // ================= PAYMENT =================
   const handlePayment = async (fee) => {
@@ -90,21 +99,24 @@ const FeeDashboard = () => {
             razorpay_signature: response.razorpay_signature,
             feeId: fee._id,
           });
+          setLoadingId(null);
         },
       };
-
+ if (!window.Razorpay) {
+  toast.error("Payment system not loaded");
+  return;
+}
       const rzp = new window.Razorpay(options);
-
-      rzp.on("payment.failed", () => {
-        toast.error("Payment failed");
-      });
+    rzp.on("payment.failed", () => {
+  toast.error("Payment failed");
+  setLoadingId(null);
+});
 
       rzp.open();
 
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoadingId(null);
+      toast.error("Payment failed. Try again")
     }
   };
  /* ===== STATS ===== */
@@ -114,13 +126,12 @@ const FeeDashboard = () => {
   const unpaid = fees.filter(b => b.status === "unpaid").length;
   const overdue = fees.filter(b => b.status === "overdue").length;
   // ================= FILTER =================
-  const filteredFees =
-    filter === "all"
-      ? fees
-      : fees.filter((f) => f.status === filter);
-
+const filteredFees =
+  filter === "all"
+    ? fees
+    : fees.filter((f) => f.status?.toLowerCase() === filter);
   const unpaidFees = fees.filter(
-    (f) => f.status === "unpaid" || f.status === "overdue"
+    (f) => ["unpaid", "overdue"].includes(f.status?.toLowerCase())
   );
 
   // ================= UI =================
