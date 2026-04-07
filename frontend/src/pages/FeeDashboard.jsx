@@ -2,25 +2,22 @@ import React, { useEffect, useState, useRef } from "react";
 import { apiGet, apiRequest } from "../services/api";
 import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
+import { API } from "../services/apiRoutes";
 import { io } from "socket.io-client";
 
-const BillingDashboard = () => {
+const FeeDashboard = () => {
 
   const socketRef = useRef(null);
 
-  const [filter, setFilter] = useState("all");
-  const [users, setUsers] = useState([]);
-  const [bills, setBills] = useState([]);
+  const [fees, setFees] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loadingId, setLoadingId] = useState(null);
-
-  const [userId, setUserId] = useState("");
-  const [month, setMonth] = useState("");
-  const [amount, setAmount] = useState("");
-
-  const [bulkMonth, setBulkMonth] = useState("");
-  const [bulkAmount, setBulkAmount] = useState("");
+  const [filter, setFilter] = useState("all");
 
   const role = localStorage.getItem("role");
+
+  console.log("🔥 FeeDashboard mounted");
+  console.log("ROLE:", role);
 
   // ================= SOCKET =================
   useEffect(() => {
@@ -28,37 +25,55 @@ const BillingDashboard = () => {
       transports: ["websocket"],
     });
 
-    socketRef.current.on("paymentSuccess", () => {
-      toast.success("Payment updated");
-      fetchBills();
+    socketRef.current.on("connect", () => {
+      console.log("✅ CONNECTED:", socketRef.current.id);
+    });
+
+    socketRef.current.on("paymentSuccess", (data) => {
+      toast.success(data.message);
+      fetchFees();
     });
 
     return () => socketRef.current.disconnect();
   }, []);
 
   // ================= FETCH =================
-  const fetchUsers = async () => {
-    const data = await apiGet("/students");
-    setUsers(data);
+  const fetchFees = async () => {
+    try {
+      const data = await apiGet(API.FEES.ALL);
+      console.log("📦 FEES DATA:", data);
+      setFees(data);
+    } catch {
+      toast.error("Failed to fetch fees");
+    }
   };
 
-  const fetchBills = async () => {
-    const data = await apiGet("/fees");
-    setBills(data);
+  const fetchStudents = async () => {
+    try {
+      const data = await apiGet(API.STUDENTS.ALL);
+      setStudents(data);
+    } catch {
+      toast.error("Failed to fetch students");
+    }
   };
 
   useEffect(() => {
-    fetchBills();
-    if (role === "admin") fetchUsers();
+    console.log("🔥 useEffect running");
+
+    fetchFees();
+
+    if (role === "admin") {
+      fetchStudents();
+    }
   }, []);
 
   // ================= PAYMENT =================
-  const handlePayment = async (bill) => {
+  const handlePayment = async (fee) => {
     try {
-      setLoadingId(bill._id);
+      setLoadingId(fee._id);
 
-      const order = await apiRequest("/payment/order", "POST", {
-        amount: bill.amount,
+      const order = await apiRequest(API.PAYMENT.ORDER, "POST", {
+        amount: fee.amount,
       });
 
       const options = {
@@ -69,65 +84,48 @@ const BillingDashboard = () => {
         order_id: order.id,
 
         handler: async (response) => {
-          await apiRequest("/payment/verify", "POST", {
+          await apiRequest(API.PAYMENT.VERIFY, "POST", {
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_order_id: response.razorpay_order_id,
             razorpay_signature: response.razorpay_signature,
-            feeId: bill._id,
+            feeId: fee._id,
           });
         },
       };
 
       const rzp = new window.Razorpay(options);
+
+      rzp.on("payment.failed", () => {
+        toast.error("Payment failed");
+      });
+
       rzp.open();
 
     } catch (err) {
-      toast.error("Payment failed");
+      console.error(err);
     } finally {
       setLoadingId(null);
     }
   };
 
-  // ================= GENERATE =================
-  const handleAddBill = async () => {
-    await apiRequest("/fees", "POST", {
-      studentId: userId,
-      month,
-      amount
-    });
-    toast.success("Bill generated");
-    fetchBills();
-  };
-
-  const handleBulkGenerate = async () => {
-    await apiRequest("/fees/bulk-generate", "POST", {
-      month: bulkMonth,
-      amount: Number(bulkAmount)
-    });
-    toast.success("Bulk generated");
-    fetchBills();
-  };
-
   // ================= FILTER =================
-  const filtered = bills.filter(b =>
-    filter === "all" ? true : b.status === filter
-  );
+  const filteredFees =
+    filter === "all"
+      ? fees
+      : fees.filter((f) => f.status === filter);
 
-  // ================= STATS =================
-  const total = bills.length;
-  const paid = bills.filter(b => b.status === "paid").length;
-  const unpaid = bills.filter(b => b.status !== "paid").length;
-  const overdue = bills.filter(b => b.status === "overdue").length;
+  const unpaidFees = fees.filter(
+    (f) => f.status === "unpaid" || f.status === "overdue"
+  );
 
   // ================= UI =================
   return (
     <MainLayout>
-
+      
       <div style={wrapper}>
 
         <h2>Billing & Payments</h2>
-
-        {/* ===== STATS ===== */}
+     {/* ===== STATS ===== */}
         <div style={stats}>
           <div style={{ ...card, background: "#16a34a" }}>Total: {total}</div>
           <div style={{ ...card, background: "#22c55e" }}>Paid: {paid}</div>
@@ -135,88 +133,59 @@ const BillingDashboard = () => {
           <div style={{ ...card, background: "#ef4444" }}>Overdue: {overdue}</div>
         </div>
 
-        {/* ===== ADMIN FORMS ===== */}
+        {/* ================= ADMIN VIEW ================= */}
         {role === "admin" && (
           <div style={forms}>
+            <h3>All Fees</h3>
+          
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="paid">Paid</option>
+              <option value="unpaid">Unpaid</option>
+              <option value="overdue">Overdue</option>
+            </select>
 
-            <div style={box}>
-              <h3>Bulk Billing</h3>
-              <input style={input} placeholder="Month" value={bulkMonth} onChange={e => setBulkMonth(e.target.value)} />
-              <input style={input} placeholder="Amount" value={bulkAmount} onChange={e => setBulkAmount(e.target.value)} />
-              <button style={btn} onClick={handleBulkGenerate}>Generate</button>
-            </div>
-
-            <div style={box}>
-              <h3>Single Billing</h3>
-              <select style={input} value={userId} onChange={e => setUserId(e.target.value)}>
-                <option>Select User</option>
-                {users.map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
-              </select>
-              <input style={input} placeholder="Month" value={month} onChange={e => setMonth(e.target.value)} />
-              <input style={input} placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} />
-              <button style={btn} onClick={handleAddBill}>Generate</button>
-            </div>
-
+            {filteredFees.length === 0 ? (
+              <p>No fees found</p>
+            ) : (
+              filteredFees.map((fee) => (
+                <div key={fee._id} style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  <h4>{fee.studentId?.name}</h4>
+                  <p>{fee.month}</p>
+                  <p>₹ {fee.amount}</p>
+                  <p>Status: {fee.status}</p>
+                </div>
+              ))
+            )}
           </div>
         )}
 
-        {/* ===== TABLE ===== */}
-        <div style={box}>
+        {/* ================= STUDENT VIEW ================= */}
+        {role !== "admin" && (
+          <div style={{ display: "grid", gap: "15px" }}>
+            {unpaidFees.length === 0 ? (
+              <p>No pending fees 🎉</p>
+            ) : (
+              unpaidFees.map((fee) => (
+                <div key={fee._id} style={{ padding: "10px", border: "1px solid #ccc" }}>
+                  <h3>{fee.month}</h3>
+                  <p>₹ {fee.amount}</p>
 
-          <h3>Billing Records</h3>
-
-          <select style={input} value={filter} onChange={e => setFilter(e.target.value)}>
-            <option value="all">All</option>
-            <option value="paid">Paid</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="overdue">Overdue</option>
-          </select>
-
-          <table style={table}>
-            <thead>
-              <tr>
-                <th style={th}>User</th>
-                <th style={th}>Month</th>
-                <th style={th}>Amount</th>
-                <th style={th}>Status</th>
-                <th style={th}>Action</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filtered.map(b => (
-                <tr key={b._id}>
-                  <td style={td}>{b.studentId?.name}</td>
-                  <td style={td}>{b.month}</td>
-                  <td style={td}>₹ {b.amount}</td>
-                  <td style={td}>
-                    <span style={statusStyle(b.status)}>
-                      {b.status}
-                    </span>
-                  </td>
-
-                  <td style={td}>
-                    {role !== "admin" && b.status !== "paid" && (
-                      <button
-                        style={btnSmall}
-                        onClick={() => handlePayment(b)}
-                        disabled={loadingId === b._id}
-                      >
-                        {loadingId === b._id ? "Processing..." : "Pay"}
-                      </button>
-                    )}
-                  </td>
-
-                </tr>
-              ))}
-            </tbody>
-
-          </table>
-
-        </div>
-
+                  <button
+                    disabled={loadingId === fee._id}
+                    onClick={() => handlePayment(fee)}
+                  >
+                    {loadingId === fee._id ? "Processing..." : "Pay Now"}
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
-
     </MainLayout>
   );
 };
@@ -282,4 +251,5 @@ const statusStyle = (status) => ({
   borderRadius: 20
 });
 
-export default BillingDashboard;
+
+export default FeeDashboard;
