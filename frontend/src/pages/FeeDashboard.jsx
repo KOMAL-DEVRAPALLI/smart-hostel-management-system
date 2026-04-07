@@ -119,6 +119,7 @@ const FeeDashboard = () => {
 }
   };
  /* ===== STATS ===== */
+   const total = fees.length;
 const paid = fees.filter(b => b.status?.toLowerCase() === "paid").length;
 const unpaid = fees.filter(b => b.status?.toLowerCase() === "unpaid").length;
 const overdue = fees.filter(b => b.status?.toLowerCase() === "overdue").length;
