@@ -71,8 +71,17 @@ useEffect(() => {
 }, []);
 useEffect(() => {
   socket.on("connect", () => {
-    console.log("Connected:", socket.id);
+    console.log("✅ CONNECTED:", socket.id);
   });
+
+  socket.on("paymentSuccess", (data) => {
+    console.log("🔥 EVENT RECEIVED:", data);
+    toast.success(data.message);
+  });
+
+  return () => {
+    socket.off("paymentSuccess");
+  };
 }, []);
   /* ================= ADD SINGLE ================= */
 
