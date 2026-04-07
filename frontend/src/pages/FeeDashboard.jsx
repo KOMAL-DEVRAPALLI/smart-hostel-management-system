@@ -9,7 +9,7 @@ const FeeDashboard = () => {
 
 
   console.log("🔥 FeeDashboard mounted");
-  console.log("ROLE:", role);
+  
   const socketRef = useRef(null);
 
   const [filter, setFilter] = useState("all");
@@ -25,7 +25,7 @@ const FeeDashboard = () => {
   const [loadingId, setLoadingId] = useState(null);
 
   const role = localStorage.getItem("role");
-
+console.log("ROLE:", role);
   const convertMonth = (value) => {
     const months = [
       "january","february","march","april","may","june",
