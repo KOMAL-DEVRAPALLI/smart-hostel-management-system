@@ -107,7 +107,12 @@ const FeeDashboard = () => {
       setLoadingId(null);
     }
   };
+ /* ===== STATS ===== */
 
+  const total = bills.length;
+  const paid = bills.filter(b => b.status === "paid").length;
+  const unpaid = bills.filter(b => b.status === "unpaid").length;
+  const overdue = bills.filter(b => b.status === "overdue").length;
   // ================= FILTER =================
   const filteredFees =
     filter === "all"
@@ -120,65 +125,151 @@ const FeeDashboard = () => {
 
   // ================= UI =================
   return (
-    <MainLayout>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <h2>Billing & Payments</h2>
+   <MainLayout>
+  <div style={wrapper}>
 
-        {/* ================= ADMIN VIEW ================= */}
-        {role === "admin" && (
-          <div>
-            <h3>All Fees</h3>
+    <h2>Billing & Payments</h2>
 
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="paid">Paid</option>
-              <option value="unpaid">Unpaid</option>
-              <option value="overdue">Overdue</option>
-            </select>
+    {/* ===== STATS ===== */}
+    <div style={stats}>
+      <div style={{ ...cardStat, background: "#16a34a" }}>Total: {total}</div>
+      <div style={{ ...cardStat, background: "#22c55e" }}>Paid: {paid}</div>
+      <div style={{ ...cardStat, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
+      <div style={{ ...cardStat, background: "#ef4444" }}>Overdue: {overdue}</div>
+    </div>
 
-            {filteredFees.length === 0 ? (
-              <p>No fees found</p>
-            ) : (
-              filteredFees.map((fee) => (
-                <div key={fee._id} style={cardBox}>
-                  <h4>{fee.studentId?.name}</h4>
-                  <p>{fee.month}</p>
-                  <p>₹ {fee.amount}</p>
-                  <p>Status: {fee.status}</p>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+    {/* ================= ADMIN VIEW ================= */}
+    {role === "admin" && (
+      <div style={box}>
+        <h3>All Fees</h3>
 
-        {/* ================= STUDENT VIEW ================= */}
-        {role !== "admin" && (
-          <div style={{ display: "grid", gap: "15px" }}>
-            {unpaidFees.length === 0 ? (
-              <p>No pending fees 🎉</p>
-            ) : (
-              unpaidFees.map((fee) => (
-                <div key={fee._id} style={{ padding: "10px", border: "1px solid #ccc" }}>
-                  <h3>{fee.month}</h3>
-                  <p>₹ {fee.amount}</p>
+        <select
+          style={input}
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        >
+          <option value="all">All</option>
+          <option value="paid">Paid</option>
+          <option value="unpaid">Unpaid</option>
+          <option value="overdue">Overdue</option>
+        </select>
 
-                  <button
-                    disabled={loadingId === fee._id}
-                    onClick={() => handlePayment(fee)}
-                  >
-                    {loadingId === fee._id ? "Processing..." : "Pay Now"}
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
+        {filteredFees.length === 0 ? (
+          <p>No fees found</p>
+        ) : (
+          filteredFees.map((fee) => (
+            <div key={fee._id} style={cardItem}>
+              <h4>{fee.studentId?.name}</h4>
+
+              <p><strong>Month:</strong> {fee.month}</p>
+              <p><strong>Amount:</strong> ₹ {fee.amount}</p>
+
+              <p>
+                <strong>Status:</strong>{" "}
+                <span style={statusStyle(fee.status)}>
+                  {fee.status}
+                </span>
+              </p>
+            </div>
+          ))
         )}
       </div>
-    </MainLayout>
+    )}
+
+    {/* ================= STUDENT VIEW ================= */}
+    {role !== "admin" && (
+      <div style={box}>
+        <h3>Your Pending Fees</h3>
+
+        {unpaidFees.length === 0 ? (
+          <p>No pending fees 🎉</p>
+        ) : (
+          unpaidFees.map((fee) => (
+            <div key={fee._id} style={cardItem}>
+              <h4>{fee.month}</h4>
+
+              <p><strong>Amount:</strong> ₹ {fee.amount}</p>
+
+              <button
+                style={btn}
+                disabled={loadingId === fee._id}
+                onClick={() => handlePayment(fee)}
+              >
+                {loadingId === fee._id ? "Processing..." : "Pay Now"}
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    )}
+
+  </div>
+</MainLayout>
   );
 };
+
+/* ===== STYLES ===== */
+
+const wrapper = { maxWidth: "1200px", margin: "0 auto" };
+
+const stats = { display: "flex", gap: 10, marginBottom: 20 };
+
+const card = {
+  flex: 1,
+  padding: 15,
+  borderRadius: 10,
+  color: "#fff",
+  textAlign: "center"
+};
+
+const forms = { display: "flex", gap: 20, flexWrap: "wrap" };
+
+const box = {
+  flex: 1,
+  minWidth: 300,
+  padding: 20,
+  background: "#fff",
+  borderRadius: 10,
+  marginTop: 20
+};
+
+const input = {
+  padding: 10,
+  marginBottom: 10,
+  width: "100%"
+};
+
+const btn = {
+  background: "#16a34a",
+  color: "#fff",
+  padding: "10px",
+  border: "none",
+  borderRadius: 6
+};
+
+const btnSmall = {
+  background: "#22c55e",
+  color: "#fff",
+  padding: "6px 10px",
+  border: "none",
+  borderRadius: 6
+};
+
+const table = { width: "100%", borderCollapse: "collapse" };
+
+const th = { textAlign: "left", padding: 10 };
+
+const td = { padding: 10 };
+
+const statusStyle = (status) => ({
+  background:
+    status === "paid"
+      ? "#dcfce7"
+      : status === "overdue"
+      ? "#fee2e2"
+      : "#fef3c7",
+  padding: "4px 10px",
+  borderRadius: 20
+});
 
 export default FeeDashboard;
