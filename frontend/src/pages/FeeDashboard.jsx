@@ -132,10 +132,10 @@ const FeeDashboard = () => {
 
     {/* ===== STATS ===== */}
     <div style={stats}>
-      <div style={{ ...cardStat, background: "#16a34a" }}>Total: {total}</div>
-      <div style={{ ...cardStat, background: "#22c55e" }}>Paid: {paid}</div>
-      <div style={{ ...cardStat, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
-      <div style={{ ...cardStat, background: "#ef4444" }}>Overdue: {overdue}</div>
+      <div style={{ ...card, background: "#16a34a" }}>Total: {total}</div>
+      <div style={{ ...card, background: "#22c55e" }}>Paid: {paid}</div>
+      <div style={{ ...card, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
+      <div style={{ ...card, background: "#ef4444" }}>Overdue: {overdue}</div>
     </div>
 
     {/* ================= ADMIN VIEW ================= */}
