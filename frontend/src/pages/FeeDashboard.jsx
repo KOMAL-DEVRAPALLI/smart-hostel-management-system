@@ -13,35 +13,32 @@ const FeeDashboard = () => {
   const [students, setStudents] = useState([]);
   const [loadingId, setLoadingId] = useState(null);
   const [filter, setFilter] = useState("all");
-
+  const [loading, setLoading] = useState(true);
   const role = localStorage.getItem("role");
 
   console.log("🔥 FeeDashboard mounted");
   console.log("ROLE:", role);
 
   // ================= SOCKET =================
-  useEffect(() => {
-    socketRef.current = io("https://backend-qlmf.onrender.com", {
-      transports: ["websocket"],
-    });
+ useEffect(() => {
+  const socket = io("https://backend-qlmf.onrender.com", {
+    transports: ["websocket"],
+  });
 
-    socketRef.current.on("connect", () => {
-      console.log("✅ CONNECTED:", socketRef.current.id);
-    });
+  socket.on("connect", () => {
+    console.log("✅ CONNECTED:", socket.id);
+  });
 
-    socketRef.current.on("paymentSuccess", (data) => {
-      toast.success(data.message);
-      fetchFees();
-    });
+  socket.on("paymentSuccess", async (data) => {
+    toast.success(data.message);
+    await fetchFees();
+  });
 
-   return () => {
- if (socketRef.current) {
-  socketRef.current.off("paymentSuccess");
-  socketRef.current.disconnect();
-}
-};
-  }, []);
-
+  return () => {
+    socket.off("paymentSuccess");
+    socket.disconnect();
+  };
+}, []);
   // ================= FETCH =================
   const fetchFees = async () => {
     try {
@@ -104,6 +101,7 @@ const FeeDashboard = () => {
       };
  if (!window.Razorpay) {
   toast.error("Payment system not loaded");
+  setLoadingId(null); // 🔥 missing
   return;
 }
       const rzp = new window.Razorpay(options);
@@ -115,16 +113,15 @@ const FeeDashboard = () => {
       rzp.open();
 
     } catch (err) {
-      console.error(err);
-      toast.error("Payment failed. Try again")
-    }
+  console.error(err);
+  toast.error("Payment failed. Try again");
+  setLoadingId(null); // 🔥 important
+}
   };
  /* ===== STATS ===== */
-
-  const total = fees.length;
-  const paid = fees.filter(b => b.status === "paid").length;
-  const unpaid = fees.filter(b => b.status === "unpaid").length;
-  const overdue = fees.filter(b => b.status === "overdue").length;
+const paid = fees.filter(b => b.status?.toLowerCase() === "paid").length;
+const unpaid = fees.filter(b => b.status?.toLowerCase() === "unpaid").length;
+const overdue = fees.filter(b => b.status?.toLowerCase() === "overdue").length;
   // ================= FILTER =================
 const filteredFees =
   filter === "all"
@@ -170,7 +167,7 @@ const filteredFees =
         ) : (
           filteredFees.map((fee) => (
             <div key={fee._id} style={cardItem}>
-              <h4>{fee.studentId?.name}</h4>
+             <h4>{fee.studentId?.name || "Unknown Student"}</h4>
 
               <p><strong>Month:</strong> {fee.month}</p>
               <p><strong>Amount:</strong> ₹ {fee.amount}</p>
@@ -282,5 +279,11 @@ const statusStyle = (status) => ({
   padding: "4px 10px",
   borderRadius: 20
 });
-
+const cardItem = {
+  padding: 15,
+  marginBottom: 10,
+  borderRadius: 10,
+  background: "#f9fafb",
+  boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
+};
 export default FeeDashboard;
