@@ -21,7 +21,7 @@ const handleResponse = async (response) => {
 
 export const apiGet = async (url) => {
   const token = localStorage.getItem("token");
-
+  console.log("SENDING TOKEN:", token);
   const res = await fetch(BASE_URL + url, {
     method: "GET",
     headers: {
@@ -29,7 +29,7 @@ export const apiGet = async (url) => {
       Authorization: `Bearer ${token}`,
     },
   });
-
+console.log("FULL URL:", BASE_URL + url);
   return res.json();
 };
 export const apiRequest = async (url, method, body) => {
