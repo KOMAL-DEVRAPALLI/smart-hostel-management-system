@@ -4,7 +4,8 @@ import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
 import { API } from "../services/apiRoutes";
 import { io } from "socket.io-client";
-console.log("🔥 FeeDashboard rendering...");
+console.log("🔥 FeeDashboard mounted");
+console.log("ROLE:", role);
 const FeeDashboard = () => {
 
   const socketRef = useRef(null);
@@ -80,9 +81,16 @@ const FeeDashboard = () => {
   };
 
   useEffect(() => {
-    if (role === "admin") fetchStudents();
-    fetchFees();
-  }, []);
+  console.log("🔥 useEffect running");
+
+  if (role === "admin") {
+    console.log("Fetching students...");
+    fetchStudents();
+  }
+
+  console.log("Fetching fees...");
+  fetchFees();
+}, []);
 
   // ================= ADD SINGLE =================
   const handleAddFee = async () => {
