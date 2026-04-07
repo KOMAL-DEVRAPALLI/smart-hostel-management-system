@@ -34,6 +34,7 @@ const io = new Server(server, {
   cors: {
     origin: "*",
   },
+  transports: ["websocket"], // 🔥 ADD THIS
 });
 
 io.on("connection", (socket) => {

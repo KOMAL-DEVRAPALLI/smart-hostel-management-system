@@ -3,11 +3,12 @@ import { apiGet, apiRequest } from "../services/api";
 import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
 import { API } from "../services/apiRoutes";
-import {io} from "socket.io-client"
-console.log("🔥 SOCKET CODE LOADED");
+import { io } from "socket.io-client";
 
- const socket = io("https://backend-qlmf.onrender.com", {
-  transports: ["websocket"]
+const socket = io("https://backend-qlmf.onrender.com", {
+  transports: ["websocket"],   // 🔥 force websocket
+  secure: true,
+  reconnection: true,
 });
 const FeeDashboard = () => {
  
