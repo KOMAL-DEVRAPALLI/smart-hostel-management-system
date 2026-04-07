@@ -15,6 +15,7 @@ const FeeDashboard = () => {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const role = localStorage.getItem("role");
+  const [expandedStudent, setExpandedStudent] = useState(null);
 
   console.log("🔥 FeeDashboard mounted");
   console.log("ROLE:", role);
@@ -39,6 +40,11 @@ const FeeDashboard = () => {
     socket.disconnect();
   };
 }, []);
+const toggleStudent = (studentId) => {
+  setExpandedStudent((prev) =>
+    prev === studentId ? null : studentId
+  );
+};
   // ================= FETCH =================
   const fetchFees = async () => {
     try {
@@ -142,6 +148,7 @@ const filteredFees =
 
   return acc;
 }, {});
+
  /* ===== STATS ===== */
    const total = fees.length;
 const paid = fees.filter(b => b.status?.toLowerCase() === "paid").length;
@@ -172,104 +179,164 @@ const handleStatusToggle = async (fee) => {
 };
   // ================= UI =================
   return (
-   <MainLayout>
-  <div style={wrapper}>
+  <MainLayout>
+    <div style={wrapper}>
 
-    <h2>Billing & Payments</h2>
+      <p style={{ color: "#666" }}>
+        Manage student fee records and payments
+      </p>
 
-    {/* ===== STATS ===== */}
-    <div style={stats}>
-      <div style={{ ...card, background: "#16a34a" }}>Total: {total}</div>
-      <div style={{ ...card, background: "#22c55e" }}>Paid: {paid}</div>
-      <div style={{ ...card, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
-      <div style={{ ...card, background: "#ef4444" }}>Overdue: {overdue}</div>
+      {/* ===== STATS ===== */}
+      <div style={stats}>
+        <div style={{ ...statCard, background: "#3b82f6" }}>Total: {total}</div>
+        <div style={{ ...statCard, background: "#22c55e" }}>Paid: {paid}</div>
+        <div style={{ ...statCard, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
+        <div style={{ ...statCard, background: "#ef4444" }}>Overdue: {overdue}</div>
+      </div>
+
+      {/* ================= ADMIN VIEW ================= */}
+      {role === "admin" && (
+        <div style={sectionCard}>
+          <h3>All Fees</h3>
+
+          <select
+            style={input}
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option value="all">All</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="overdue">Overdue</option>
+          </select>
+
+          {Object.keys(groupedFees).length === 0 ? (
+            <p>No records found</p>
+          ) : (
+            Object.entries(groupedFees).map(([studentId, student]) => {
+              const isOpen = expandedStudent === studentId;
+
+              return (
+                <div
+                  key={studentId}
+                  style={{
+                    ...studentCard,
+                    background: isOpen ? "#f1f5f9" : "#fff",
+                    transition: "0.3s"
+                  }}
+                >
+
+                  {/* HEADER */}
+                  <div
+                    onClick={() => toggleStudent(studentId)}
+                    style={clickableHeader}
+                  >
+                    <h3 style={studentHeader}>{student.name}</h3>
+
+                    <span
+                      style={{
+                        transition: "0.3s",
+                        transform: isOpen ? "rotate(180deg)" : "rotate(0deg)"
+                      }}
+                    >
+                      ▼
+                    </span>
+                  </div>
+
+                  {/* CONTENT */}
+                  <div
+                    style={{
+                      maxHeight: isOpen ? "500px" : "0px",
+                      overflow: "hidden",
+                      transition: "all 0.3s ease"
+                    }}
+                  >
+                    <div style={{ marginTop: 10 }}>
+                      {student.fees.map((fee) => (
+                        <div key={fee._id} style={cardItem}>
+
+                          <div style={feeItem}>
+                            <div>
+                              <p><strong>{fee.month}</strong></p>
+                              <p>₹ {fee.amount}</p>
+                            </div>
+
+                            <span style={statusStyle(fee.status)}>
+                              {fee.status}
+                            </span>
+                          </div>
+
+                          <div style={{ marginTop: 10 }}>
+                            <button
+                              style={
+                                fee.status?.toLowerCase() === "paid"
+                                  ? dangerBtn
+                                  : primaryBtn
+                              }
+                              disabled={loadingId === fee._id}
+                              onClick={() => handleStatusToggle(fee)}
+                            >
+                              {loadingId === fee._id
+                                ? "Updating..."
+                                : fee.status?.toLowerCase() === "paid"
+                                ? "Mark as Unpaid"
+                                : "Mark as Paid"}
+                            </button>
+                          </div>
+
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* ================= STUDENT VIEW ================= */}
+      {role !== "admin" && (
+        <div style={studentCard}>
+          <h3>Your Pending Fees</h3>
+
+          {unpaidFees.length === 0 ? (
+            <p>No pending fees 🎉</p>
+          ) : (
+            unpaidFees.map((fee) => (
+              <div key={fee._id} style={cardItem}>
+                <h4>{fee.month}</h4>
+
+                <p><strong>Amount:</strong> ₹ {fee.amount}</p>
+
+                <button
+                  style={btn}
+                  disabled={loadingId === fee._id}
+                  onClick={() => handlePayment(fee)}
+                >
+                  {loadingId === fee._id ? "Processing..." : "Pay Now"}
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
     </div>
+  </MainLayout>
+);
 
-    {/* ================= ADMIN VIEW ================= */}
-    {role === "admin" && (
-      <div style={box}>
-        <h3>All Fees</h3>
-
-        <select
-          style={input}
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        >
-          <option value="all">All</option>
-          <option value="paid">Paid</option>
-          <option value="unpaid">Unpaid</option>
-          <option value="overdue">Overdue</option>
-        </select>
-
-    {Object.values(groupedFees).map((student) => (
-  <div key={student.name} style={box}>
-    <h3>{student.name}</h3>
-
-    {student.fees.map((fee) => (
-      <div key={fee._id} style={cardItem}>
-        <p><strong>Month:</strong> {fee.month}</p>
-        <p><strong>Amount:</strong> ₹ {fee.amount}</p>
-
-        <p>
-          <strong>Status:</strong>{" "}
-          <span style={statusStyle(fee.status)}>
-            {fee.status}
-          </span>
-        </p>
-      </div>
-    ))}
-  </div>
-
-))}
-
-      </div>
-    )}
-
-    {/* ================= STUDENT VIEW ================= */}
-    {role !== "admin" && (
-      <div style={box}>
-        <h3>Your Pending Fees</h3>
-
-        {unpaidFees.length === 0 ? (
-          <p>No pending fees 🎉</p>
-        ) : (
-          unpaidFees.map((fee) => (
-            <div key={fee._id} style={cardItem}>
-              <h4>{fee.month}</h4>
-
-              <p><strong>Amount:</strong> ₹ {fee.amount}</p>
-
-              <button
-                style={btn}
-                disabled={loadingId === fee._id}
-                onClick={() => handlePayment(fee)}
-              >
-                {loadingId === fee._id ? "Processing..." : "Pay Now"}
-              </button>
-              <button
-  style={btn}
-  disabled={loadingId === fee._id}
-  onClick={() => handleStatusToggle(fee)}
->
-  {loadingId === fee._id
-    ? "Updating..."
-    : fee.status?.toLowerCase() === "paid"
-    ? "Mark as Unpaid"
-    : "Mark as Paid"}
-</button>
-            </div>
-          ))
-        )}
-      </div>
-    )}
-
-  </div>
-</MainLayout>
-  );
-};
-
+}
 /* ===== STYLES ===== */
-
+const clickableHeader = {
+  display: "flex",
+  justifyContent: "space-between",
+  cursor: "pointer",
+  alignItems: "center",
+  padding: "10px 0",
+  transition: "0.2s"
+};
 const wrapper = { maxWidth: "1200px", margin: "0 auto" };
 
 const stats = { display: "flex", gap: 10, marginBottom: 20 };
@@ -281,24 +348,67 @@ const card = {
   color: "#fff",
   textAlign: "center"
 };
-
-const forms = { display: "flex", gap: 20, flexWrap: "wrap" };
-
-const box = {
-  flex: 1,
-  minWidth: 300,
-  padding: 20,
+const sectionCard = {
   background: "#fff",
-  borderRadius: 10,
-  marginTop: 20
+  padding: 20,
+  borderRadius: 12,
+  marginBottom: 20
+};
+const studentHeader = {
+  marginBottom: 10,
+  fontSize: "18px",
+  fontWeight: "600"
+};
+const container = {
+  maxWidth: "1200px",
+  margin: "0 auto",
+  padding: "20px"
+};
+const feeItem = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "12px 0",
+  borderBottom: "1px solid #eee"
 };
 
+const statCard = {
+  flex: 1,
+  padding: 20,
+  borderRadius: 12,
+  background: "#fff",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+  textAlign: "center",
+  fontWeight: "600"
+};
 const input = {
   padding: 10,
   marginBottom: 10,
   width: "100%"
 };
+const primaryBtn = {
+  background: "#2563eb",
+  color: "#fff",
+  padding: "8px 14px",
+  borderRadius: 6,
+  border: "none",
+  cursor: "pointer"
+};
 
+const dangerBtn = {
+  background: "#ef4444",
+  color: "#fff",
+  padding: "8px 14px",
+  borderRadius: 6,
+  border: "none",
+};
+const studentCard = {
+  background: "#fff",
+  borderRadius: 12,
+  padding: 20,
+  marginBottom: 20,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+};
 const btn = {
   background: "#16a34a",
   color: "#fff",
@@ -307,19 +417,6 @@ const btn = {
   borderRadius: 6
 };
 
-const btnSmall = {
-  background: "#22c55e",
-  color: "#fff",
-  padding: "6px 10px",
-  border: "none",
-  borderRadius: 6
-};
-
-const table = { width: "100%", borderCollapse: "collapse" };
-
-const th = { textAlign: "left", padding: 10 };
-
-const td = { padding: 10 };
 
 const statusStyle = (status) => ({
   background:
