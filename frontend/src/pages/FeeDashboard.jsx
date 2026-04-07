@@ -4,12 +4,9 @@ import MainLayout from "../components/layout/MainLayout";
 import toast from "react-hot-toast";
 import { API } from "../services/apiRoutes";
 import { io } from "socket.io-client";
-console.log("🔥 SOCKET CODE LOADED");
-const socket = io("https://backend-qlmf.onrender.com", {
-  transports: ["websocket"],   // 🔥 force websocket
-  secure: true,
-  reconnection: true,
-});
+import { useEffect, useRef } from "react";
+
+
 const FeeDashboard = () => {
  
   const [filter, setFilter] = useState("all");
@@ -72,20 +69,32 @@ useEffect(() => {
     socket.off("paymentSuccess");
   };
 }, []);
-useEffect(() => {
-  socket.on("connect", () => {
-    console.log("✅ CONNECTED:", socket.id);
-  });
+const socketRef = useRef(null);
 
-  socket.on("paymentSuccess", (data) => {
-    console.log("🔥 EVENT RECEIVED:", data);
-    toast.success(data.message);
-  });
+  useEffect(() => {
+    console.log("🔥 Initializing socket...");
 
-  return () => {
-    socket.off("paymentSuccess");
-  };
-}, []);
+    socketRef.current = io("https://backend-qlmf.onrender.com", {
+      transports: ["websocket"],
+      secure: true,
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log("✅ CONNECTED:", socketRef.current.id);
+    });
+
+    socketRef.current.on("connect_error", (err) => {
+      console.log("❌ CONNECTION ERROR:", err.message);
+    });
+
+    socketRef.current.on("paymentSuccess", (data) => {
+      console.log("🔥 EVENT RECEIVED:", data);
+    });
+
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, []);
   /* ================= ADD SINGLE ================= */
 
   const handleAddFee = async () => {
