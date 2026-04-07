@@ -74,13 +74,14 @@ console.log("ROLE:", role);
   };
 
   const fetchFees = async () => {
-    try {
-      const data = await apiGet(API.FEES.ALL);
-      setFees(data);
-    } catch {
-      toast.error("Failed to fetch fees");
-    }
-  };
+  console.log("🔥 fetchFees called");
+
+  const data = await apiGet(API.FEES.ALL);
+
+  console.log("📦 FEES DATA:", data);  // 👈 ADD THIS
+
+  setFees(data);
+};
 
   useEffect(() => {
   console.log("🔥 useEffect running");
