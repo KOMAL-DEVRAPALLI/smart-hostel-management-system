@@ -19,39 +19,30 @@ const handleResponse = async (response) => {
   }
 };
 
-export const apiGet = async (endpoint) => {
+export const apiGet = async (url) => {
   const token = localStorage.getItem("token");
 
-  console.log("API GET CALL:", endpoint);
-  console.log("TOKEN USED:", token);  // 🔥 IMPORTANT
-
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
+  const res = await fetch(BASE_URL + url, {
+    method: "GET",
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
 
-  return handleResponse(response);
+  return res.json();
 };
-
-export const apiRequest = async (url, method, data) => {
+export const apiRequest = async (url, method, body) => {
   const token = localStorage.getItem("token");
 
-  const res = await fetch(`${BASE_URL}${url}`, {
+  const res = await fetch(BASE_URL + url, {
     method,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(body),
   });
 
-  const result = await res.json();
-
-  if (!res.ok) {
-    console.error("API ERROR:", result);
-    throw new Error(result.message || "Something went wrong");
-  }
-
-  return result;
+  return res.json();
 };
