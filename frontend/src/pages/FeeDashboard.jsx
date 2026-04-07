@@ -7,39 +7,20 @@ import { io } from "socket.io-client";
 
 const FeeDashboard = () => {
 
-
-  console.log("🔥 FeeDashboard mounted");
-  
   const socketRef = useRef(null);
 
-  const [filter, setFilter] = useState("all");
-  const [students, setStudents] = useState([]);
   const [fees, setFees] = useState([]);
-  const [selectedFee, setSelectedFee] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [studentId, setStudentId] = useState("");
-  const [month, setMonth] = useState("");
-  const [amount, setAmount] = useState("");
-  const [bulkMonth, setBulkMonth] = useState("");
-  const [bulkAmount, setBulkAmount] = useState("");
+  const [students, setStudents] = useState([]);
   const [loadingId, setLoadingId] = useState(null);
+  const [filter, setFilter] = useState("all");
 
   const role = localStorage.getItem("role");
-console.log("ROLE:", role);
-  const convertMonth = (value) => {
-    const months = [
-      "january","february","march","april","may","june",
-      "july","august","september","october","november","december"
-    ];
-    if (!value) return "";
-    const index = parseInt(value.split("-")[1], 10) - 1;
-    return months[index];
-  };
+
+  console.log("🔥 FeeDashboard mounted");
+  console.log("ROLE:", role);
 
   // ================= SOCKET =================
   useEffect(() => {
-    console.log("🔥 Initializing socket...");
-
     socketRef.current = io("https://backend-qlmf.onrender.com", {
       transports: ["websocket"],
     });
@@ -49,21 +30,24 @@ console.log("ROLE:", role);
     });
 
     socketRef.current.on("paymentSuccess", (data) => {
-      console.log("🔥 EVENT:", data);
       toast.success(data.message);
-      fetchFees(); // auto refresh
+      fetchFees();
     });
 
-    socketRef.current.on("connect_error", (err) => {
-      console.log("❌ SOCKET ERROR:", err.message);
-    });
-
-    return () => {
-      socketRef.current.disconnect();
-    };
+    return () => socketRef.current.disconnect();
   }, []);
 
   // ================= FETCH =================
+  const fetchFees = async () => {
+    try {
+      const data = await apiGet(API.FEES.ALL);
+      console.log("📦 FEES DATA:", data);
+      setFees(data);
+    } catch {
+      toast.error("Failed to fetch fees");
+    }
+  };
+
   const fetchStudents = async () => {
     try {
       const data = await apiGet(API.STUDENTS.ALL);
@@ -73,74 +57,15 @@ console.log("ROLE:", role);
     }
   };
 
-  const fetchFees = async () => {
-  console.log("🔥 fetchFees called");
-
-  const data = await apiGet(API.FEES.ALL);
-
-  console.log("📦 FEES DATA:", data);  // 👈 ADD THIS
-
-  setFees(data);
-};
-
   useEffect(() => {
-  console.log("🔥 useEffect running");
+    console.log("🔥 useEffect running");
 
-  if (role === "admin") {
-    console.log("Fetching students...");
-    fetchStudents();
-  }
+    fetchFees();
 
-  console.log("Fetching fees...");
-  fetchFees();
-}, []);
-
-  // ================= ADD SINGLE =================
-  const handleAddFee = async () => {
-    if (!studentId || !month || !amount) {
-      return toast.error("All fields required");
+    if (role === "admin") {
+      fetchStudents();
     }
-
-    if (Number(amount) <= 0) {
-      return toast.error("Invalid amount");
-    }
-
-    try {
-      await apiRequest(API.FEES.ALL, "POST", {
-        studentId,
-        month: convertMonth(month),
-        amount: Number(amount),
-      });
-
-      toast.success("Fee generated");
-      setStudentId(""); setMonth(""); setAmount("");
-      fetchFees();
-
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
-  // ================= BULK =================
-  const handleBulkGenerate = async () => {
-    if (!bulkMonth || !bulkAmount) {
-      return toast.error("All fields required");
-    }
-
-    try {
-      await apiRequest(API.FEES.BULK_GENERATE, "POST", {
-        month: convertMonth(bulkMonth),
-        amount: Number(bulkAmount),
-      });
-
-      toast.success("Bulk fees generated");
-      setBulkMonth(""); setBulkAmount("");
-      fetchFees();
-
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
+  }, []);
 
   // ================= PAYMENT =================
   const handlePayment = async (fee) => {
@@ -159,16 +84,12 @@ console.log("ROLE:", role);
         order_id: order.id,
 
         handler: async (response) => {
-          try {
-            await apiRequest(API.PAYMENT.VERIFY, "POST", {
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              feeId: fee._id,
-            });
-          } catch {
-            toast.error("Verification failed");
-          }
+          await apiRequest(API.PAYMENT.VERIFY, "POST", {
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            feeId: fee._id,
+          });
         },
       };
 
@@ -188,22 +109,14 @@ console.log("ROLE:", role);
   };
 
   // ================= FILTER =================
-  const filteredFees = fees.filter((f) =>
-    filter === "all" ? true : f.status === filter
+  const filteredFees =
+    filter === "all"
+      ? fees
+      : fees.filter((f) => f.status === filter);
+
+  const unpaidFees = fees.filter(
+    (f) => f.status === "unpaid" || f.status === "overdue"
   );
-
-  // ================= GROUP =================
-  const groupedFees = filteredFees.reduce((acc, fee) => {
-    const name = fee.studentId?.name || "Unknown";
-    if (!acc[name]) acc[name] = [];
-    acc[name].push(fee);
-    return acc;
-  }, {});
-
-  // ================= STATS =================
-  const total = fees.length;
-  const paid = fees.filter(f => f.status === "paid").length;
-  const unpaid = fees.filter(f => f.status !== "paid");
 
   // ================= UI =================
   return (
@@ -211,21 +124,56 @@ console.log("ROLE:", role);
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <h2>Billing & Payments</h2>
 
-        {/* STUDENT VIEW */}
+        {/* ================= ADMIN VIEW ================= */}
+        {role === "admin" && (
+          <div>
+            <h3>All Fees</h3>
+
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="paid">Paid</option>
+              <option value="unpaid">Unpaid</option>
+              <option value="overdue">Overdue</option>
+            </select>
+
+            {filteredFees.length === 0 ? (
+              <p>No fees found</p>
+            ) : (
+              filteredFees.map((fee) => (
+                <div key={fee._id} style={cardBox}>
+                  <h4>{fee.studentId?.name}</h4>
+                  <p>{fee.month}</p>
+                  <p>₹ {fee.amount}</p>
+                  <p>Status: {fee.status}</p>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* ================= STUDENT VIEW ================= */}
         {role !== "admin" && (
           <div style={{ display: "grid", gap: "15px" }}>
-            {fees.map((b) => (
-              <div key={b._id} style={cardBox}>
-                <h3>{b.month}</h3>
-                <p>₹ {b.amount}</p>
-                <button
-                  disabled={loadingId === b._id}
-                  onClick={() => handlePayment(b)}
-                >
-                  {loadingId === b._id ? "Processing..." : "Pay Now"}
-                </button>
-              </div>
-            ))}
+            {unpaidFees.length === 0 ? (
+              <p>No pending fees 🎉</p>
+            ) : (
+              unpaidFees.map((fee) => (
+                <div key={fee._id} style={cardBox}>
+                  <h3>{fee.month}</h3>
+                  <p>₹ {fee.amount}</p>
+
+                  <button
+                    disabled={loadingId === fee._id}
+                    onClick={() => handlePayment(fee)}
+                  >
+                    {loadingId === fee._id ? "Processing..." : "Pay Now"}
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>
