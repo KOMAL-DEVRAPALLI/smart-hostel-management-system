@@ -19,19 +19,22 @@ const handleResponse = async (response) => {
   }
 };
 
+
+
 export const apiGet = async (url) => {
   const token = localStorage.getItem("token");
-  console.log("SENDING TOKEN:", token);
+
   const res = await fetch(BASE_URL + url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`, // 🔥 MUST be here
     },
   });
-console.log("FULL URL:", BASE_URL + url);
+
   return res.json();
 };
+
 export const apiRequest = async (url, method, body) => {
   const token = localStorage.getItem("token");
 
@@ -39,7 +42,7 @@ export const apiRequest = async (url, method, body) => {
     method,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`, // 🔥 MUST be here
     },
     body: JSON.stringify(body),
   });
