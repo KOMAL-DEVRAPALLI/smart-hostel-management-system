@@ -83,7 +83,7 @@ const toggleStudent = (studentId) => {
     if (role === "admin") {
       fetchStudents();
     }
-  }, [role]);
+  }, []);
 
   // ================= PAYMENT =================
   const handlePayment = async (fee) => {
