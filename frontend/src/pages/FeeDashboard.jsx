@@ -22,8 +22,8 @@ const FeeDashboard = () => {
   const [bulkMonth, setBulkMonth] = useState("");
   const [bulkAmount, setBulkAmount] = useState("");
 
-  console.log("🔥 FeeDashboard mounted");
-  console.log("ROLE:", role);
+  // console.log("🔥 FeeDashboard mounted");
+  // console.log("ROLE:", role);
 
   // ================= SOCKET =================
  useEffect(() => {
@@ -54,7 +54,7 @@ const toggleStudent = (studentId) => {
   const fetchFees = async () => {
     try {
       const data = await apiGet(API.FEES.ALL);
-      console.log("📦 FEES DATA:", data);
+      // console.log("📦 FEES DATA:", data);
         if (!Array.isArray(data)) {
   throw new Error("Invalid data");
 }
@@ -75,7 +75,7 @@ const toggleStudent = (studentId) => {
   };
 
   useEffect(() => {
-    console.log("🔥 useEffect running");
+    // console.log("🔥 useEffect running");
 
     fetchFees();
 

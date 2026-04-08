@@ -25,7 +25,7 @@ const [showDropdown, setShowDropdown] = useState(false);
 
 useEffect(() => {
   socket.on("connect", () => {
-    console.log("✅ CONNECTED:", socket.id);
+    // console.log("✅ CONNECTED:", socket.id);
   });
 
   socket.on("paymentSuccess", (data) => {
