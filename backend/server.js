@@ -15,7 +15,7 @@ import roomRoutes from "./routes/roomRoutes.js";
 import feeRoutes from "./routes/feeRoutes.js";
 import complaintRoutes from "./routes/complaintRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
-
+import chartRoutes from "./routes/chartRoutes.js";
 const app = express();
 
 // ================= CONNECT DB =================
@@ -61,7 +61,7 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/fees", feeRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/payment", paymentRoutes);
-
+app.use("/api/chart", chartRoutes)
 // ================= SERVER =================
 const PORT = process.env.PORT || 4000;
 
