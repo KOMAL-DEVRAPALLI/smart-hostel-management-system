@@ -105,6 +105,15 @@ const sidebarStyle = {
   padding: "20px",
   overflowY: "auto"
 };
+const menuItem = {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  padding: "12px 15px",
+  marginBottom: "12px",   // 👈 IMPORTANT
+  borderRadius: "8px",
+  cursor: "pointer"
+};
 
 const contentStyle = {
   flex: 1,
