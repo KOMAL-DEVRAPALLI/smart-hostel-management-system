@@ -7,8 +7,13 @@ export const getDashboardData = async (req, res) => {
     // ===== BASIC STATS =====
     const totalStudents = await Student.countDocuments();
     const totalFees = await Fee.countDocuments();
-    const paidFees = await Fee.countDocuments({ status: "Paid" });
-    const unpaidFees = await Fee.countDocuments({ status: "Unpaid" });
+  const paidFees = await Fee.countDocuments({
+  status: { $in: ["paid", "Paid"] }
+});
+
+const unpaidFees = await Fee.countDocuments({
+  status: { $in: ["unpaid", "Unpaid"] }
+});
 
     // ===== MONTHLY FEE COLLECTION =====
    const monthsOrder = [
