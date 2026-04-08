@@ -6,17 +6,39 @@ import {
   FaHome,
   FaMoneyBill
 } from "react-icons/fa";
-
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+import { FaBell } from "react-icons/fa";
 const MainLayout = ({ children }) => {
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
-
+  const [notifications, setNotifications] = useState([]);
+const [showDropdown, setShowDropdown] = useState(false);
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     navigate("/");
   };
+const socket = io(import.meta.env.VITE_API_URL);
+useEffect(() => {
+  socket.on("paymentSuccess", (data) => {
+    setNotifications((prev) => [
+      { message: data.message, time: new Date() },
+      ...prev
+    ]);
+  });
 
+  socket.on("complaintResolved", (data) => {
+    setNotifications((prev) => [
+      { message: data.message, time: new Date() },
+      ...prev
+    ]);
+  });
+
+  return () => {
+    socket.disconnect();
+  };
+}, []);
   return (
     <div style={layoutStyle}>
 
@@ -92,8 +114,34 @@ const MainLayout = ({ children }) => {
       {/* ===== MAIN CONTENT ===== */}
       <div style={contentStyle}>
         <div style={headerStyle}>
-          <h2>Hostel Management System</h2>
-        </div>
+  <h2>Hostel Management System</h2>
+
+  <div style={{ position: "relative" }}>
+    <FaBell
+      size={20}
+      style={{ cursor: "pointer" }}
+      onClick={() => setShowDropdown(!showDropdown)}
+    />
+
+    {notifications.length > 0 && (
+      <span style={badgeStyle}>{notifications.length}</span>
+    )}
+
+    {showDropdown && (
+      <div style={dropdownStyle}>
+        {notifications.length === 0 ? (
+          <p>No notifications</p>
+        ) : (
+          notifications.map((n, i) => (
+            <div key={i} style={notificationItem}>
+              {n.message}
+            </div>
+          ))
+        )}
+      </div>
+    )}
+  </div>
+</div>
 
         <div style={{ padding: "20px" }}>{children}</div>
       </div>
@@ -135,7 +183,34 @@ const menuItem = {
   textDecoration: "none",
   transition: "0.2s"
 };
+const badgeStyle = {
+  position: "absolute",
+  top: "-5px",
+  right: "-5px",
+  background: "red",
+  color: "white",
+  borderRadius: "50%",
+  fontSize: "10px",
+  padding: "3px 6px"
+};
 
+const dropdownStyle = {
+  position: "absolute",
+  top: "30px",
+  right: 0,
+  width: "250px",
+  background: "white",
+  borderRadius: "8px",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+  padding: "10px",
+  zIndex: 100
+};
+
+const notificationItem = {
+  padding: "8px",
+  borderBottom: "1px solid #eee",
+  fontSize: "14px"
+};
 const contentStyle = {
   flex: 1,
   background: "#f1f5f9",
