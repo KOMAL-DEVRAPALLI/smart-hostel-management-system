@@ -185,8 +185,8 @@ setChartData(dashboard)
       <PieChart>
         <Pie
           data={[
-            { name: "Paid", value: Number(chartData.paidFees || 0) },
-            { name: "Unpaid", value: Number(chartData.unpaidFees || 0) }
+            { name: "paid", value: Number(chartData.paidFees || 0) },
+            { name: "unpaid", value: Number(chartData.unpaidFees || 0) }
           ]}
           dataKey="value"
           nameKey="name"
