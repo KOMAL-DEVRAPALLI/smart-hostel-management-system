@@ -26,7 +26,7 @@ const AdminDashboard = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
   const [chartData, setChartData] = useState(null);
-
+  console.log("CHART DATA:", chartData);
   const [stats, setStats] = useState({
     students: 0,
     rooms: 0,
