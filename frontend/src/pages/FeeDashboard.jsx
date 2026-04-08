@@ -380,9 +380,22 @@ overflowY: "auto",
                       transition: "all 0.3s ease"
                     }}
                   >
+                 <div style={{
+  ...feeRow,
+  fontWeight: "600",
+  background: "#f1f5f9",
+  padding: "10px",
+  borderRadius: "6px",
+  marginBottom: "8px"
+}}>
+  <span>Month</span>
+  <span>Amount</span>
+  <span>Status</span>
+  <span>Action</span>
+</div>
                     <div style={{ marginTop: 10 }}>
                       {student.fees.map((fee) => (
-  <div key={fee._id} style={cardItem}>
+  <div key={fee._id} style={feeRow}>
     <div style={feeRow}>
       <span style={{ fontWeight: "600" }}>{fee.month}</span>
 
@@ -464,7 +477,7 @@ const clickableHeader = {
 };
 const feeRow = {
   display: "grid",
- gridTemplateColumns: "1fr 1fr 1fr auto",
+ gridTemplateColumns: "1.5fr 1fr 1fr auto",
   alignItems: "center",
   padding: "10px 0",
   borderBottom: "1px solid #eee",
@@ -560,22 +573,19 @@ const btn = {
   borderRadius: 6
 };
 
-
 const statusStyle = (status) => ({
-  background:
-    status === "paid"
-      ? "#dcfce7"
-      : status === "overdue"
-      ? "#fee2e2"
-      : "#fef3c7",
+  display: "inline-block",
   padding: "4px 10px",
-  borderRadius: 20
+  borderRadius: 20,
+  fontSize: "12px",
+  width: "fit-content",
+  textAlign: "center"
 });
+
 const cardItem = {
-  padding: "5px 10px",
-  marginBottom: 5,
-  borderRadius: 10,
+  padding: "8px 12px",
+  marginBottom: 6,
   background: "#f9fafb",
-  boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
+  borderRadius: 8,
 };
 export default FeeDashboard;
