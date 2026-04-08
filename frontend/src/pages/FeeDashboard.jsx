@@ -380,19 +380,7 @@ overflowY: "auto",
                       transition: "all 0.3s ease"
                     }}
                   >
-                 <div style={{
-  ...feeRow,
-  fontWeight: "600",
-  background: "#f1f5f9",
-  padding: "10px",
-  borderRadius: "6px",
-  marginBottom: "8px"
-}}>
-  <span>Month</span>
-  <span>Amount</span>
-  <span>Status</span>
-  <span>Action</span>
-</div>
+                
                     <div style={{ marginTop: 10 }}>
                       {student.fees.map((fee) => (
   <div key={fee._id} style={feeRow}>
@@ -581,7 +569,6 @@ const statusStyle = (status) => ({
   width: "fit-content",
   textAlign: "center"
 });
-
 const cardItem = {
   padding: "8px 12px",
   marginBottom: 6,
