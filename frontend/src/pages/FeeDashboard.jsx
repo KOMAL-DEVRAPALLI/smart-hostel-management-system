@@ -168,7 +168,7 @@ const handleStatusToggle = async (fee) => {
     const newStatus =
       fee.status?.toLowerCase() === "paid" ? "unpaid" : "paid";
 
-    await apiRequest(API.FEES.UPDATE_STATUS, "PATCH", {
+    await apiRequest(API.FEES.UPDATE_STATUS(fee._id), "PATCH", {
       feeId: fee._id,
       status: newStatus,
     });
