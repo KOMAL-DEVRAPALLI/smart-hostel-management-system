@@ -1,10 +1,14 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { FaUsers, FaBed, FaMoneyBillWave, FaExclamationCircle , FaHome, FaMoneyBill} from "react-icons/fa";
+import {
+  FaUsers,
+  FaBed,
+  FaExclamationCircle,
+  FaHome,
+  FaMoneyBill
+} from "react-icons/fa";
 
 const MainLayout = ({ children }) => {
-
   const navigate = useNavigate();
-
   const role = localStorage.getItem("role");
 
   const handleLogout = () => {
@@ -19,72 +23,83 @@ const MainLayout = ({ children }) => {
       {/* ===== SIDEBAR ===== */}
       <div style={sidebarStyle}>
 
-        <h3 style={{ marginBottom: "20px" }}>
-          Hostel Admin
-        </h3>
+        {/* TOP SECTION */}
+        <div>
+          <h3 style={{ marginBottom: "25px" }}>Hostel Admin</h3>
 
-        {/* Dashboard */}
-        <NavLink
-          to={role === "admin" ? "/admin" : "/student"}
-          style={navStyle}
-        >
-          <FaHome/>  Dashboard
-        </NavLink>
-    <hr style={{ margin: "20px 0", opacity: 0.2 }} />
+          <NavLink
+            to={role === "admin" ? "/admin" : "/student"}
+            style={({ isActive }) => ({
+              ...menuItem,
+              background: isActive ? "#2563eb" : "#1e293b"
+            })}
+          >
+            <FaHome /> Dashboard
+          </NavLink>
 
-        {/* Admin Only Links */}
-        {role === "admin" && (
-          <>
-            <NavLink to="/students" style={navStyle}>
-             <FaUsers/>  Students
-            </NavLink>
-<hr style={{ margin: "20px 0", opacity: 0.2 }} />
-            <NavLink to="/rooms" style={navStyle}>
-              <FaBed/>  Rooms
-            </NavLink>
-          </>
-        )}
+          {role === "admin" && (
+            <>
+              <NavLink
+                to="/students"
+                style={({ isActive }) => ({
+                  ...menuItem,
+                  background: isActive ? "#2563eb" : "#1e293b"
+                })}
+              >
+                <FaUsers /> Students
+              </NavLink>
 
-<hr style={{ margin: "20px 0", opacity: 0.2 }} />
-        {/* Shared Links */}
-        <NavLink to="/fees" style={navStyle}>
-        <FaMoneyBill/>  {role === "admin" ? "Fees" : " My Fees"}
-        </NavLink>
-<hr style={{ margin: "20px 0", opacity: 0.2 }} />
-        <NavLink to="/complaints" style={navStyle}>
-        <FaExclamationCircle/>  {role === "admin" ? "Complaints" : " My Complaints"}
-        </NavLink>
+              <NavLink
+                to="/rooms"
+                style={({ isActive }) => ({
+                  ...menuItem,
+                  background: isActive ? "#2563eb" : "#1e293b"
+                })}
+              >
+                <FaBed /> Rooms
+              </NavLink>
+            </>
+          )}
 
+          <NavLink
+            to="/fees"
+            style={({ isActive }) => ({
+              ...menuItem,
+              background: isActive ? "#2563eb" : "#1e293b"
+            })}
+          >
+            <FaMoneyBill /> {role === "admin" ? "Fees" : "My Fees"}
+          </NavLink>
 
-        <button
-          onClick={handleLogout}
-          style={logoutButton}
-        >
+          <NavLink
+            to="/complaints"
+            style={({ isActive }) => ({
+              ...menuItem,
+              background: isActive ? "#2563eb" : "#1e293b"
+            })}
+          >
+            <FaExclamationCircle />{" "}
+            {role === "admin" ? "Complaints" : "My Complaints"}
+          </NavLink>
+        </div>
+
+        {/* BOTTOM SECTION */}
+        <button onClick={handleLogout} style={logoutButton}>
           Logout
         </button>
-
       </div>
-
 
       {/* ===== MAIN CONTENT ===== */}
       <div style={contentStyle}>
-
-        {/* Top header */}
         <div style={headerStyle}>
           <h2>Hostel Management System</h2>
         </div>
 
-        <div style={{ padding: "20px" }}>
-          {children}
-        </div>
-
+        <div style={{ padding: "20px" }}>{children}</div>
       </div>
-
     </div>
   );
 };
-
-
 
 /* ================= STYLES ================= */
 
@@ -103,16 +118,22 @@ const sidebarStyle = {
   background: "#0f172a",
   color: "white",
   padding: "20px",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-between",
   overflowY: "auto"
 };
+
 const menuItem = {
   display: "flex",
   alignItems: "center",
-  gap: "10px",
+  gap: "12px",
   padding: "12px 15px",
-  marginBottom: "12px",   // 👈 IMPORTANT
+  marginBottom: "12px",
   borderRadius: "8px",
-  cursor: "pointer"
+  color: "white",
+  textDecoration: "none",
+  transition: "0.2s"
 };
 
 const contentStyle = {
@@ -122,7 +143,6 @@ const contentStyle = {
   flexDirection: "column",
   marginLeft: "220px",
   padding: "20px"
-
 };
 
 const headerStyle = {
@@ -131,21 +151,12 @@ const headerStyle = {
   borderBottom: "1px solid #e2e8f0"
 };
 
-const navStyle = ({ isActive }) => ({
-  textDecoration: "none",
-  padding: "10px",
-  borderRadius: "6px",
-  color: "white",
-  background: isActive ? "#2563eb" : "#1e293b"
-});
-
 const logoutButton = {
-  marginTop: "auto",
-  padding: "10px",
+  padding: "12px",
   background: "#dc2626",
   border: "none",
   color: "white",
-  borderRadius: "6px",
+  borderRadius: "8px",
   cursor: "pointer"
 };
 
