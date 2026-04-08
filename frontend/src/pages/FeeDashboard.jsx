@@ -12,7 +12,6 @@ const FeeDashboard = () => {
   const [fees, setFees] = useState([]);
   const [students, setStudents] = useState([]);
   const [loadingId, setLoadingId] = useState(null);
-    const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const role = localStorage.getItem("role");
@@ -235,7 +234,7 @@ const handleStatusToggle = async (fee) => {
       setMonth("");
       setAmount("");
 
-      fetchBills();
+    fetchFees()
 
     } catch (error) {
       toast.error(error.message);
@@ -295,7 +294,7 @@ const handleStatusToggle = async (fee) => {
                 onChange={(e) => setUserId(e.target.value)}
               >
                 <option value="">Select User</option>
-                {users.map(u => (
+                {students.map(u => (
                   <option key={u._id} value={u._id}>
                     {u.name}
                   </option>
