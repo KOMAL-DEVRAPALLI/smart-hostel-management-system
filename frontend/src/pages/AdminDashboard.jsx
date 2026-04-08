@@ -10,11 +10,22 @@ import {
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 import ConfirmDialog from "../components/ConfirmDialog";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie
+} from "recharts";
+
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [chartData, setChartData] = useState(null);
 
   const [stats, setStats] = useState({
     students: 0,
@@ -28,7 +39,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     loadStats();
   }, []);
-
+  
   const loadStats = async () => {
     try {
       setLoading(true);
@@ -53,7 +64,8 @@ const AdminDashboard = () => {
       });
 
       generateInsights(rooms, fees, complaints);
-
+const dashboard = await apiGet(API.DASHBOARD.ALL)
+setChartData(dashboard)
     } catch (error) {
       console.error(error); // ✅ DON'T HIDE ERRORS
       toast.error("Error loading dashboard");
@@ -151,6 +163,33 @@ const AdminDashboard = () => {
             <StatCard title="Open Complaints" value={stats.complaints} gradient="linear-gradient(135deg, #ef4444, #dc2626)" icon={<FaExclamationCircle size={28} />} />
           </div>
 
+            {chartData && (
+  <div style={{ marginTop: "30px", background: "#fff", padding: "20px", borderRadius: "10px" }}>
+    <h3>Monthly Fee Collection</h3>
+
+    <LineChart width={500} height={300} data={chartData.monthlyFees}>
+      <XAxis dataKey="_id" />
+      <YAxis />
+      <Tooltip />
+      <Line type="monotone" dataKey="total" stroke="#3b82f6" />
+    </LineChart>
+  </div>
+)}
+{chartData && (
+  <div style={{ marginTop: "30px", background: "#fff", padding: "20px", borderRadius: "10px" }}>
+    <h3>Fee Status</h3>
+
+    <PieChart width={400} height={300}>
+      <Pie
+        data={[
+          { name: "Paid", value: chartData.paidFees },
+          { name: "Unpaid", value: chartData.unpaidFees }
+        ]}
+        dataKey="value"
+      />
+    </PieChart>
+  </div>
+)}
           {/* ===== INSIGHTS ===== */}
           <div style={insightContainer}>
             <h3>Smart Insights</h3>

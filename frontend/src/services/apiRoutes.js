@@ -29,4 +29,7 @@ export const API = {
   ORDER: "/api/payment/order",
   VERIFY: "/api/payment/verify"
 },
+DASHBOARD:{
+  ALL:"/api/chart"
+}
 };
