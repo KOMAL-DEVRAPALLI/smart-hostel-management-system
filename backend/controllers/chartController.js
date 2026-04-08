@@ -26,7 +26,10 @@ const monthlyFeesRaw = await Fee.aggregate([
 ]);
 
 const monthlyFees = monthsOrder.map(month => {
-  const found = monthlyFeesRaw.find(m => m._id === month);
+  const found = monthlyFeesRaw.find(
+    m => m._id?.toLowerCase() === month.toLowerCase()
+  );
+
   return {
     _id: month,
     total: found ? found.total : 0
