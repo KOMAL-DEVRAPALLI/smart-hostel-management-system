@@ -380,10 +380,10 @@ overflowY: "auto",
                       transition: "all 0.3s ease"
                     }}
                   >
-                
+                  
                     <div style={{ marginTop: 10 }}>
                       {student.fees.map((fee) => (
-  <div key={fee._id} style={feeRow}>
+  <div key={fee._id} style={cardItem}>
     <div style={feeRow}>
       <span style={{ fontWeight: "600" }}>{fee.month}</span>
 
@@ -561,13 +561,14 @@ const btn = {
   borderRadius: 6
 };
 
+
+
 const statusStyle = (status) => ({
   display: "inline-block",
   padding: "4px 10px",
   borderRadius: 20,
   fontSize: "12px",
-  width: "fit-content",
-  textAlign: "center"
+  width: "fit-content", // 🔥 important
 });
 const cardItem = {
   padding: "8px 12px",
