@@ -375,46 +375,41 @@ const handleStatusToggle = async (fee) => {
                   {/* CONTENT */}
                   <div
                     style={{
-                      maxHeight: isOpen ? "500px" : "0px",
-                      overflow: "hidden",
+                 maxHeight: isOpen ? "500px" : "0px",
+overflowY: "auto",
                       transition: "all 0.3s ease"
                     }}
                   >
                     <div style={{ marginTop: 10 }}>
                       {student.fees.map((fee) => (
-                        <div key={fee._id} style={cardItem}>
+  <div key={fee._id} style={cardItem}>
+    <div style={feeRow}>
+      <span style={{ fontWeight: "600" }}>{fee.month}</span>
 
-                          <div style={feeItem}>
-                            <div>
-                              <p><strong>{fee.month}</strong></p>
-                              <p>₹ {fee.amount}</p>
-                            </div>
+      <span>₹ {fee.amount}</span>
 
-                            <span style={statusStyle(fee.status)}>
-                              {fee.status}
-                            </span>
-                          </div>
+      <span style={statusStyle(fee.status)}>
+        {fee.status}
+      </span>
 
-                          <div style={{ marginTop: 10 }}>
-                            <button
-                              style={
-                                fee.status?.toLowerCase() === "paid"
-                                  ? dangerBtn
-                                  : primaryBtn
-                              }
-                              disabled={loadingId === fee._id}
-                              onClick={() => handleStatusToggle(fee)}
-                            >
-                              {loadingId === fee._id
-                                ? "Updating..."
-                                : fee.status?.toLowerCase() === "paid"
-                                ? "Mark as Unpaid"
-                                : "Mark as Paid"}
-                            </button>
-                          </div>
-
-                        </div>
-                      ))}
+      <button
+        style={
+          fee.status?.toLowerCase() === "paid"
+            ? dangerBtn
+            : primaryBtn
+        }
+        disabled={loadingId === fee._id}
+        onClick={() => handleStatusToggle(fee)}
+      >
+        {loadingId === fee._id
+          ? "Updating..."
+          : fee.status?.toLowerCase() === "paid"
+          ? "Mark as Unpaid"
+          : "Mark as Paid"}
+      </button>
+    </div>
+  </div>
+))}
                     </div>
                   </div>
 
@@ -457,6 +452,7 @@ const handleStatusToggle = async (fee) => {
 );
 
 }
+
 /* ===== STYLES ===== */
 const clickableHeader = {
   display: "flex",
@@ -465,6 +461,14 @@ const clickableHeader = {
   alignItems: "center",
   padding: "10px 0",
   transition: "0.2s"
+};
+const feeRow = {
+  display: "grid",
+ gridTemplateColumns: "1fr 1fr 1fr auto",
+  alignItems: "center",
+  padding: "10px 0",
+  borderBottom: "1px solid #eee",
+
 };
 const wrapper = { maxWidth: "1200px", margin: "0 auto" };
 const forms = { display: "flex", gap: 20, flexWrap: "wrap" };
@@ -568,8 +572,8 @@ const statusStyle = (status) => ({
   borderRadius: 20
 });
 const cardItem = {
-  padding: 15,
-  marginBottom: 10,
+  padding: "5px 10px",
+  marginBottom: 5,
   borderRadius: 10,
   background: "#f9fafb",
   boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
