@@ -1,5 +1,4 @@
-const BASE_URL = "https://backend-qlmf.onrender.com";
-
+const BASE_URL = import.meta.env.VITE_API_URL;
 const handleResponse = async (response) => {
   console.log("BASE URL:", BASE_URL);
   if (response.status === 401) {
@@ -18,34 +17,37 @@ const handleResponse = async (response) => {
     throw new Error("Server error (non-JSON response)");
   }
 };
-
-
-
 export const apiGet = async (url) => {
   const token = localStorage.getItem("token");
 
-  const res = await fetch(BASE_URL + url, {
+  const fullUrl = BASE_URL + url;
+  console.log("GET:", fullUrl);
+
+  const res = await fetch(fullUrl, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`, // 🔥 MUST be here
+      Authorization: `Bearer ${token}`,
     },
   });
 
-  return res.json();
+  return handleResponse(res);
 };
 
 export const apiRequest = async (url, method, body) => {
   const token = localStorage.getItem("token");
 
-  const res = await fetch(BASE_URL + url, {
+  const fullUrl = BASE_URL + url;
+  console.log("REQUEST:", fullUrl);
+
+  const res = await fetch(fullUrl, {
     method,
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`, // 🔥 MUST be here
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   });
 
-  return res.json();
+  return handleResponse(res);
 };
