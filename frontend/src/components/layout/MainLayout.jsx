@@ -95,20 +95,25 @@ const layoutStyle = {
 };
 
 const sidebarStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  height: "100vh",
   width: "220px",
   background: "#0f172a",
   color: "white",
   padding: "20px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "10px"
+  overflowY: "auto"
 };
 
 const contentStyle = {
   flex: 1,
   background: "#f1f5f9",
   display: "flex",
-  flexDirection: "column"
+  flexDirection: "column",
+  marginLeft: "220px",
+  padding: "20px"
+
 };
 
 const headerStyle = {
