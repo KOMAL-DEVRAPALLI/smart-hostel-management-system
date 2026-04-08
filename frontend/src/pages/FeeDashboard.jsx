@@ -467,6 +467,16 @@ const clickableHeader = {
   transition: "0.2s"
 };
 const wrapper = { maxWidth: "1200px", margin: "0 auto" };
+const forms = { display: "flex", gap: 20, flexWrap: "wrap" };
+
+const box = {
+  flex: 1,
+  minWidth: 300,
+  padding: 20,
+  background: "#fff",
+  borderRadius: 10,
+  marginTop: 20
+};
 
 const stats = { display: "flex", gap: 10, marginBottom: 20 };
 
