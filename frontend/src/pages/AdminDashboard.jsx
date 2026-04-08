@@ -177,7 +177,7 @@ setChartData(dashboard)
     </ResponsiveContainer>
   </div>
 )}
-{chartData && chartData.paidFees !== undefined && (
+{chartData && (
   <div style={{ marginTop: "30px", background: "#fff", padding: "20px", borderRadius: "10px" }}>
     <h3>Fee Status</h3>
 
