@@ -71,7 +71,7 @@ router.patch(
 // ================= ALLOCATE ROOM =================
 
 router.post(
-  "/auto-allocate",
+  "/allocate-room",
   authMiddleware,
   roleMiddleware(["admin"]),
   autoAllocateRoom
