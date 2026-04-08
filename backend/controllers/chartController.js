@@ -11,15 +11,27 @@ export const getDashboardData = async (req, res) => {
     const unpaidFees = await Fee.countDocuments({ status: "Unpaid" });
 
     // ===== MONTHLY FEE COLLECTION =====
-    const monthlyFees = await Fee.aggregate([
-      {
-        $group: {
-          _id: "$month", // e.g. "Jan", "Feb"
-          total: { $sum: "$amount" },
-        },
-      },
-      { $sort: { _id: 1 } },
-    ]);
+   const monthsOrder = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
+
+const monthlyFeesRaw = await Fee.aggregate([
+  {
+    $group: {
+      _id: "$month",
+      total: { $sum: "$amount" }
+    }
+  }
+]);
+
+const monthlyFees = monthsOrder.map(month => {
+  const found = monthlyFeesRaw.find(m => m._id === month);
+  return {
+    _id: month,
+    total: found ? found.total : 0
+  };
+});
 
     // ===== ROOM OCCUPANCY =====
     const roomData = await Room.find().select("roomNumber capacity occupiedCount");

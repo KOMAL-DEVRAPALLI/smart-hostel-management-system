@@ -19,7 +19,7 @@ import {
   PieChart,
   Pie
 } from "recharts";
-
+import { ResponsiveContainer } from "recharts";
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -167,25 +167,30 @@ setChartData(dashboard)
   <div style={{ marginTop: "30px", background: "#fff", padding: "20px", borderRadius: "10px" }}>
     <h3>Monthly Fee Collection</h3>
 
-    <LineChart width={500} height={300} data={chartData.monthlyFees}>
+    <ResponsiveContainer width="100%" height={300}>
+  <LineChart data={chartData.monthlyFees}>
       <XAxis dataKey="_id" />
       <YAxis />
       <Tooltip />
       <Line type="monotone" dataKey="total" stroke="#3b82f6" />
     </LineChart>
+    </ResponsiveContainer>
   </div>
 )}
-{chartData && (
+{chartData && chartData.paidFees !== undefined && (
   <div style={{ marginTop: "30px", background: "#fff", padding: "20px", borderRadius: "10px" }}>
     <h3>Fee Status</h3>
 
-    <PieChart width={400} height={300}>
+    <PieChart width={300} height={300}>
       <Pie
         data={[
-          { name: "Paid", value: chartData.paidFees },
-          { name: "Unpaid", value: chartData.unpaidFees }
+          { name: "Paid", value: chartData.paidFees || 0 },
+          { name: "Unpaid", value: chartData.unpaidFees || 0 }
         ]}
         dataKey="value"
+        cx="50%"
+        cy="50%"
+        outerRadius={100}
       />
     </PieChart>
   </div>
