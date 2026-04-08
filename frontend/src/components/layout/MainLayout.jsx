@@ -9,6 +9,9 @@ import {
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { FaBell } from "react-icons/fa";
+const socket = io(import.meta.env.VITE_API_URL, {
+  transports: ["websocket"], // 👈 IMPORTANT FIX
+});
 const MainLayout = ({ children }) => {
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
@@ -19,24 +22,29 @@ const [showDropdown, setShowDropdown] = useState(false);
     localStorage.removeItem("role");
     navigate("/");
   };
-const socket = io(import.meta.env.VITE_API_URL);
+
 useEffect(() => {
+  socket.on("connect", () => {
+    console.log("✅ CONNECTED:", socket.id);
+  });
+
   socket.on("paymentSuccess", (data) => {
     setNotifications((prev) => [
-      { message: data.message, time: new Date() },
+      { message: data.message },
       ...prev
     ]);
   });
 
   socket.on("complaintResolved", (data) => {
     setNotifications((prev) => [
-      { message: data.message, time: new Date() },
+      { message: data.message },
       ...prev
     ]);
   });
 
   return () => {
-    socket.disconnect();
+    socket.off("paymentSuccess");
+    socket.off("complaintResolved");
   };
 }, []);
   return (
