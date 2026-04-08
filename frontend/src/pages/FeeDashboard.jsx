@@ -12,10 +12,16 @@ const FeeDashboard = () => {
   const [fees, setFees] = useState([]);
   const [students, setStudents] = useState([]);
   const [loadingId, setLoadingId] = useState(null);
+    const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const role = localStorage.getItem("role");
   const [expandedStudent, setExpandedStudent] = useState(null);
+    const [userId, setUserId] = useState("");
+  const [month, setMonth] = useState("");
+  const [amount, setAmount] = useState("");
+  const [bulkMonth, setBulkMonth] = useState("");
+  const [bulkAmount, setBulkAmount] = useState("");
 
   console.log("🔥 FeeDashboard mounted");
   console.log("ROLE:", role);
@@ -177,6 +183,67 @@ const handleStatusToggle = async (fee) => {
     setLoadingId(null);
   }
 };
+  /* ===== BULK BILL ===== */
+
+  const handleBulkGenerate = async () => {
+    if (!bulkMonth || !bulkAmount) {
+      toast.error("Month and amount required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await apiRequest(API.FEES.BULK_GENERATE, "POST", {
+        month: bulkMonth.trim().toLowerCase(),
+        amount: Number(bulkAmount) // ✅ FIXED
+      });
+
+      toast.success("Bulk bills generated");
+
+      setBulkMonth("");
+      setBulkAmount("");
+
+      fetchFees()
+
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+ /* ===== SINGLE BILL ===== */
+
+  const handleAddBill = async () => {
+    if (!userId || !month || !amount) {
+      toast.error("All fields required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await apiRequest(API.FEES.ALL, "POST", {
+        studentId: userId,
+        month,
+        amount
+      });
+
+      toast.success("Bill generated");
+
+      setUserId("");
+      setMonth("");
+      setAmount("");
+
+      fetchBills();
+
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ================= UI =================
   return (
   <MainLayout>
@@ -193,7 +260,69 @@ const handleStatusToggle = async (fee) => {
         <div style={{ ...statCard, background: "#f59e0b" }}>Unpaid: {unpaid}</div>
         <div style={{ ...statCard, background: "#ef4444" }}>Overdue: {overdue}</div>
       </div>
+ {/* ===== FORMS ===== */}
+        {role === "admin" && (
+          <div style={forms}>
 
+            <div style={box}>
+              <h3>Bulk Billing</h3>
+
+              <input
+                style={input}
+                placeholder="Month"
+                value={bulkMonth}
+                onChange={(e) => setBulkMonth(e.target.value)}
+              />
+
+              <input
+                style={input}
+                placeholder="Amount"
+                value={bulkAmount}
+                onChange={(e) => setBulkAmount(e.target.value)}
+              />
+
+              <button style={btn} onClick={handleBulkGenerate}>
+                Generate Bills
+              </button>
+            </div>
+
+            <div style={box}>
+              <h3>Single Billing</h3>
+
+              <select
+                style={input}
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+              >
+                <option value="">Select User</option>
+                {users.map(u => (
+                  <option key={u._id} value={u._id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                style={input}
+                placeholder="Month"
+                value={month}
+                onChange={(e) => setMonth(e.target.value)}
+              />
+
+              <input
+                style={input}
+                placeholder="Amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+
+              <button style={btn} onClick={handleAddBill}>
+                Generate Bill
+              </button>
+            </div>
+
+          </div>
+        )}
       {/* ================= ADMIN VIEW ================= */}
       {role === "admin" && (
         <div style={sectionCard}>
