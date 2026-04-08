@@ -181,18 +181,23 @@ setChartData(dashboard)
   <div style={{ marginTop: "30px", background: "#fff", padding: "20px", borderRadius: "10px" }}>
     <h3>Fee Status</h3>
 
-    <PieChart width={300} height={300}>
-      <Pie
-        data={[
-          { name: "Paid", value: chartData.paidFees || 0 },
-          { name: "Unpaid", value: chartData.unpaidFees || 0 }
-        ]}
-        dataKey="value"
-        cx="50%"
-        cy="50%"
-        outerRadius={100}
-      />
-    </PieChart>
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie
+          data={[
+            { name: "Paid", value: Number(chartData.paidFees || 0) },
+            { name: "Unpaid", value: Number(chartData.unpaidFees || 0) }
+          ]}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          outerRadius={100}
+          fill="#3b82f6"
+          label
+        />
+      </PieChart>
+    </ResponsiveContainer>
   </div>
 )}
           {/* ===== INSIGHTS ===== */}
