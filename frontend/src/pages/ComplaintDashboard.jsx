@@ -73,7 +73,7 @@ const ComplaintDashboard = () => {
       setComplaints(prev => [newComplaint, ...prev]);
 
       toast.success("Complaint submitted");
-
+      fetchComplaints();
       setForm({ title: "", description: "" });
 
     } catch (error) {
