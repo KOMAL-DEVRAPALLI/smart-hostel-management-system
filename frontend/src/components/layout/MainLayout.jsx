@@ -17,56 +17,39 @@ const MainLayout = ({ children }) => {
   const role = localStorage.getItem("role");
   const [notifications, setNotifications] = useState([]);
 const [showDropdown, setShowDropdown] = useState(false);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     navigate("/");
   };
-
+  const addNotification = (message)=>{
+    setNotifications((prev)=>[
+      {message,
+      time: new Date().toLocaleTimeString()},
+      ...prev
+    ])
+  }
 useEffect(() => {
-  socket.on("connect", () => {
-    // console.log("✅ CONNECTED:", socket.id);
+  socket.on("paymentSuccess", (data) => {
+    addNotification(data.message);
   });
 
-  socket.on("paymentSuccess", (data) => {
-    setNotifications((prev) => [
-      { message: data.message },
-      ...prev
-    ]);
+  socket.on("newComplaint", (data) => {
+    addNotification(data.message);
   });
 
   socket.on("complaintResolved", (data) => {
-    setNotifications((prev) => [
-      { message: data.message },
-      ...prev
-    ]);
+    addNotification(data.message);
   });
 
   return () => {
     socket.off("paymentSuccess");
-    socket.off("complaintResolved");
-  };
-}, []);
-useEffect(() => {
-  socket.on("newComplaint", (data) => {
-    setNotifications((prev) => [
-      { message: data.message },
-      ...prev
-    ]);
-  });
-
-  socket.on("complaintResolved", (data) => {
-    setNotifications((prev) => [
-      { message: data.message },
-      ...prev
-    ]);
-  });
-
-  return () => {
     socket.off("newComplaint");
     socket.off("complaintResolved");
   };
 }, []);
+
   return (
     <div style={layoutStyle}>
 
@@ -143,32 +126,34 @@ useEffect(() => {
       <div style={contentStyle}>
         <div style={headerStyle}>
   <h2>Hostel Management System</h2>
-
   <div style={{ position: "relative" }}>
-    <FaBell
-      size={20}
-      style={{ cursor: "pointer" }}
-      onClick={() => setShowDropdown(!showDropdown)}
-    />
+  <FaBell
+    size={20}
+    style={{ cursor: "pointer" }}
+    onClick={() => setShowDropdown(!showDropdown)}
+  />
 
-    {notifications.length > 0 && (
-      <span style={badgeStyle}>{notifications.length}</span>
-    )}
+  {notifications.length > 0 && (
+    <span style={badgeStyle}>
+      {notifications.length}
+    </span>
+  )}
 
-    {showDropdown && (
-      <div style={dropdownStyle}>
-        {notifications.length === 0 ? (
-          <p>No notifications</p>
-        ) : (
-          notifications.map((n, i) => (
-            <div key={i} style={notificationItem}>
-              {n.message}
-            </div>
-          ))
-        )}
-      </div>
-    )}
-  </div>
+  {showDropdown && (
+    <div style={dropdownStyle}>
+      {notifications.length === 0 ? (
+        <p>No notifications</p>
+      ) : (
+        notifications.map((n, i) => (
+          <div key={i} style={notificationItem}>
+            <p>{n.message}</p>
+            <small>{n.time}</small>
+          </div>
+        ))
+      )}
+    </div>
+  )}
+</div>
 </div>
 
         <div style={{ padding: "20px" }}>{children}</div>
@@ -231,7 +216,9 @@ const dropdownStyle = {
   borderRadius: "8px",
   boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
   padding: "10px",
-  zIndex: 100
+  zIndex: 100,
+  maxHeight:"300px",
+  overflowY:"auto"
 };
 
 const notificationItem = {
@@ -249,6 +236,9 @@ const contentStyle = {
 };
 
 const headerStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
   background: "white",
   padding: "15px 20px",
   borderBottom: "1px solid #e2e8f0"
