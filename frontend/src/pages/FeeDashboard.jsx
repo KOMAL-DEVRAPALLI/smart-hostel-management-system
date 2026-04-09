@@ -428,31 +428,32 @@ overflowY: "auto",
       <p>No fees found</p>
     ) : (
       studentFees.map((fee) => (
-        <div key={fee._id} style={cardItem}>
+       <div key={fee._id} style={feeRow}>
 
-          <h4>{fee.month}</h4>
+  <span style={{ fontWeight: "600" }}>
+    {fee.month}
+  </span>
 
-          <p><strong>Amount:</strong> ₹ {fee.amount}</p>
+  <span>₹ {fee.amount}</span>
 
-          <p>
-            <strong>Status:</strong>{" "}
-            <span style={statusStyle(fee.status)}>
-              {fee.status}
-            </span>
-          </p>
+  <span style={statusStyle(fee.status)}>
+    {fee.status}
+  </span>
 
-          {/* ✅ Pay only if not paid */}
-          {fee.status?.toLowerCase() !== "paid" && (
-            <button
-              style={btn}
-              disabled={loadingId === fee._id}
-              onClick={() => handlePayment(fee)}
-            >
-              {loadingId === fee._id ? "Processing..." : "Pay Now"}
-            </button>
-          )}
+  {/* Pay button */}
+  {fee.status?.toLowerCase() !== "paid" ? (
+    <button
+      style={btn}
+      disabled={loadingId === fee._id}
+      onClick={() => handlePayment(fee)}
+    >
+      {loadingId === fee._id ? "..." : "Pay"}
+    </button>
+  ) : (
+    <span style={{ color: "#999" }}>—</span>
+  )}
 
-        </div>
+</div>
       ))
     )}
 
@@ -475,11 +476,12 @@ const clickableHeader = {
 };
 const feeRow = {
   display: "grid",
- gridTemplateColumns: "1.5fr 1fr 1fr auto",
+  gridTemplateColumns: "1.5fr 1fr 1fr 1fr",
   alignItems: "center",
-  padding: "10px 0",
+  padding: "12px 10px",
   borderBottom: "1px solid #eee",
-
+  gap: "10px",
+  transition: "0.2s"
 };
 const wrapper = { maxWidth: "1200px", margin: "0 auto" };
 const forms = { display: "flex", gap: 20, flexWrap: "wrap" };
