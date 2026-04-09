@@ -79,7 +79,7 @@ const StudentListPage = () => {
   const confirmDeactivate = async () => {
     try {
       await apiRequest(
-        API.STUDENTS.DEALLOCATE_ROOM,
+         `${API.STUDENTS.ALL}/${selectedId}/deactivate`,
         "PATCH"
       );
 
@@ -161,10 +161,10 @@ const StudentListPage = () => {
       setActionLoading(true);
 
       await apiRequest(
-        `${API.STUDENTS.ALL}/${selectedId}/deactivate`,
-        "PATCH",
-        { studentId: id }
-      );
+  API.STUDENTS.DEALLOCATE_ROOM,
+  "PATCH",
+  { studentId: id }
+);
 
       setStudents(prev =>
         prev.map(s =>

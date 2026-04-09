@@ -294,8 +294,6 @@ export const autoAllocateRoom = async (req, res) => {
   }
 };
 
-
-
 // ================= DEALLOCATE =================
 
 export const deallocateRoom = async (req, res) => {
