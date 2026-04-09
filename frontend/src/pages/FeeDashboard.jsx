@@ -134,9 +134,7 @@ const filteredFees =
   filter === "all"
     ? fees
     : fees.filter((f) => f.status?.toLowerCase() === filter);
-  const unpaidFees = fees.filter(
-    (f) => ["unpaid", "overdue"].includes(f.status?.toLowerCase())
-  );
+  const studentFees = fees
 
  const groupedFees = filteredFees.reduce((acc, fee) => {
   const studentId = fee.studentId?._id || "unknown";
@@ -421,32 +419,45 @@ overflowY: "auto",
       )}
 
       {/* ================= STUDENT VIEW ================= */}
-      {role !== "admin" && (
-        <div style={studentCard}>
-          <h3>Your Pending Fees</h3>
+     {role !== "admin" && (
+  <div style={studentCard}>
 
-          {unpaidFees.length === 0 ? (
-            <p>No pending fees 🎉</p>
-          ) : (
-            unpaidFees.map((fee) => (
-              <div key={fee._id} style={cardItem}>
-                <h4>{fee.month}</h4>
+    <h3>Your Fee History</h3>
 
-                <p><strong>Amount:</strong> ₹ {fee.amount}</p>
+    {studentFees.length === 0 ? (
+      <p>No fees found</p>
+    ) : (
+      studentFees.map((fee) => (
+        <div key={fee._id} style={cardItem}>
 
-                <button
-                  style={btn}
-                  disabled={loadingId === fee._id}
-                  onClick={() => handlePayment(fee)}
-                >
-                  {loadingId === fee._id ? "Processing..." : "Pay Now"}
-                </button>
-              </div>
-            ))
+          <h4>{fee.month}</h4>
+
+          <p><strong>Amount:</strong> ₹ {fee.amount}</p>
+
+          <p>
+            <strong>Status:</strong>{" "}
+            <span style={statusStyle(fee.status)}>
+              {fee.status}
+            </span>
+          </p>
+
+          {/* ✅ Pay only if not paid */}
+          {fee.status?.toLowerCase() !== "paid" && (
+            <button
+              style={btn}
+              disabled={loadingId === fee._id}
+              onClick={() => handlePayment(fee)}
+            >
+              {loadingId === fee._id ? "Processing..." : "Pay Now"}
+            </button>
           )}
-        </div>
-      )}
 
+        </div>
+      ))
+    )}
+
+  </div>
+)}
     </div>
   </MainLayout>
 );
