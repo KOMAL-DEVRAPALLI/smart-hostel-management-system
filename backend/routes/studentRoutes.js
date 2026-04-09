@@ -16,7 +16,7 @@ import { roleMiddleware } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
-router.post("/auto-allocate-all",
+router.post("/auto-allocate",
 authMiddleware,autoAllocateAll
 )
 // ================= ADD STUDENT =================
