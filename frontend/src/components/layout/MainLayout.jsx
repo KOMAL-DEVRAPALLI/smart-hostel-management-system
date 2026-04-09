@@ -47,6 +47,26 @@ useEffect(() => {
     socket.off("complaintResolved");
   };
 }, []);
+useEffect(() => {
+  socket.on("newComplaint", (data) => {
+    setNotifications((prev) => [
+      { message: data.message },
+      ...prev
+    ]);
+  });
+
+  socket.on("complaintResolved", (data) => {
+    setNotifications((prev) => [
+      { message: data.message },
+      ...prev
+    ]);
+  });
+
+  return () => {
+    socket.off("newComplaint");
+    socket.off("complaintResolved");
+  };
+}, []);
   return (
     <div style={layoutStyle}>
 
