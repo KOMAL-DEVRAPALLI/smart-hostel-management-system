@@ -109,7 +109,7 @@ const StudentListPage = () => {
       setActionLoading(true);
 
       await apiRequest(
-        `${API.STUDENTS.ALL}/allocate-room`,
+        API.STUDENTS.ALLOCATE_ROOM,
         "POST",
         {
           studentId: selectedStudentId,
@@ -138,7 +138,7 @@ const StudentListPage = () => {
       setActionLoading(true);
 
       await apiRequest(
-        `${API.STUDENTS.ALL}/auto-allocate`,
+        API.STUDENTS.AUTO_ALLOCATE,
         "POST",
         { studentId: id }
       );
@@ -161,7 +161,7 @@ const StudentListPage = () => {
       setActionLoading(true);
 
       await apiRequest(
-        `${API.STUDENTS.ALL}/deallocate-room`,
+        API.STUDENTS.DEALLOCATE_ROOM,
         "PATCH",
         { studentId: id }
       );

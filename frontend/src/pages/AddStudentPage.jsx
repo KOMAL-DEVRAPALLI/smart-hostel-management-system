@@ -68,7 +68,12 @@ const AddStudentPage = () => {
       await apiRequest(API.STUDENTS.ALL, "POST", formData);
 
       toast.success("Student added successfully");
-      setFormData("")
+      setFormData({
+  name: "",
+  phone: "",
+  email: "",
+  password: ""
+});
       navigate("/students");
 
     } catch (error) {
