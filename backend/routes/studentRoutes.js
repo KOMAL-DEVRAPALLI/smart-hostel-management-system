@@ -16,9 +16,26 @@ import { roleMiddleware } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
-router.post("/auto-allocate",
-authMiddleware,autoAllocateAll
-)
+router.post(
+  "/auto-allocate-all",
+  authMiddleware,
+  roleMiddleware(["admin"]),
+  autoAllocateAll
+);
+
+router.post(
+  "/allocate-room",
+  authMiddleware,
+  roleMiddleware(["admin"]),
+  autoAllocateRoom
+);
+
+router.patch(
+  "/deallocate-room",
+  authMiddleware,
+  roleMiddleware(["admin"]),
+  deallocateRoom
+);
 // ================= ADD STUDENT =================
 
 router.post(
@@ -68,24 +85,7 @@ router.patch(
 );
 
 
-// ================= ALLOCATE ROOM =================
 
-router.post(
-  "/allocate-room",
-  authMiddleware,
-  roleMiddleware(["admin"]),
-  autoAllocateRoom
-);
-
-
-// ================= DEALLOCATE ROOM =================
-
-router.patch(
-  "/deallocate-room",
-  authMiddleware,
-  roleMiddleware(["admin"]),
-  deallocateRoom
-);
 console.log("students routes loaded");
 
 

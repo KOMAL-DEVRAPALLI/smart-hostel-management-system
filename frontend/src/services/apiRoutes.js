@@ -8,7 +8,8 @@ export const API = {
     ALL: "/api/students",
     ME:"/api/students/me",
     AUTO_ALLOCATE: "/api/students/auto-allocate-all",
-    ALLOCATE_ROOM: "/api/students/allocate-room"
+    ALLOCATE_ROOM: "/api/students/allocate-room",
+    DEALLOCATE_ROOM: "/api/students/deallocate-room"
   },
 
   ROOMS: {
