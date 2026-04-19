@@ -183,19 +183,30 @@ setChartData(dashboard)
 
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
+
         <Pie
           data={[
-            { name: "paid", value: Number(chartData.paidFees || 0) },
-            { name: "unpaid", value: Number(chartData.unpaidFees || 0) }
+            { name: "Paid", value: Number(chartData.paidFees || 0) },
+            { name: "Unpaid", value: Number(chartData.unpaidFees || 0) }
           ]}
           dataKey="value"
           nameKey="name"
           cx="50%"
           cy="50%"
           outerRadius={100}
-          fill="#3b82f6"
           label
-        />
+        >
+          {/* 🔥 COLORS FIX */}
+          <Cell fill="#22c55e" /> {/* Paid → Green */}
+          <Cell fill="#ef4444" /> {/* Unpaid → Red */}
+        </Pie>
+
+        {/* 🔥 LEGEND ADD */}
+        <Legend />
+
+        {/* 🔥 TOOLTIP ADD */}
+        <Tooltip formatter={(value) => `${value} bookings`}/>
+
       </PieChart>
     </ResponsiveContainer>
   </div>
