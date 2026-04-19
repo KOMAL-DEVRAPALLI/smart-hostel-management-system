@@ -171,7 +171,7 @@ setChartData(dashboard)
   <LineChart data={chartData.monthlyFees}>
       <XAxis dataKey="_id" />
       <YAxis />
-      <Tooltip />
+      <Tooltip formatter={(value) => `${value} bookings`}/>
       <Line type="monotone" dataKey="total" stroke="#3b82f6" />
     </LineChart>
     </ResponsiveContainer>
