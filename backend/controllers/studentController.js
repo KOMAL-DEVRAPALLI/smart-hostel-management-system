@@ -7,16 +7,26 @@ import bcrypt from "bcryptjs";
 // ================= ADD STUDENT =================
 
 export const addStudent = async (req, res) => {
-  try {
+  let user = null;
 
+  try {
     const { name, phone, email, password } = req.body;
 
+    // ===== VALIDATION =====
     if (!name || !phone || !email || !password) {
       return res.status(400).json({
         message: "All fields required",
       });
     }
 
+    // simple phone validation
+    if (!/^\d{10}$/.test(phone)) {
+      return res.status(400).json({
+        message: "Invalid phone number",
+      });
+    }
+
+    // ===== CHECK EXISTING USER =====
     const userExists = await User.findOne({ email });
 
     if (userExists) {
@@ -25,15 +35,18 @@ export const addStudent = async (req, res) => {
       });
     }
 
+    // ===== HASH PASSWORD =====
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
+    // ===== CREATE USER =====
+    user = await User.create({
       name,
       email,
       password: hashedPassword,
       role: "student",
     });
 
+    // ===== CREATE STUDENT =====
     const student = await Student.create({
       name,
       phone,
@@ -42,20 +55,26 @@ export const addStudent = async (req, res) => {
       roomId: null,
     });
 
+    // ===== SUCCESS =====
     res.status(201).json({
       message: "Student added successfully",
       data: student,
     });
 
   } catch (error) {
-   console.log(error)
-    res.status(500).json({
-      message: "Error adding student",
-    });
 
+    // ===== ROLLBACK USER IF STUDENT FAILS =====
+    if (user) {
+      await User.deleteOne({ _id: user._id });
+    }
+
+    console.error("🔥 ADD STUDENT ERROR:", error);
+
+    res.status(500).json({
+      message: error.message, // VERY IMPORTANT
+    });
   }
 };
-
 
 
 // ================= GET ALL =================
